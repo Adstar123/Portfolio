@@ -18,7 +18,7 @@ export default function LampEffect() {
 
   return (
     <div className="absolute inset-0 pointer-events-none">
-      {/* Main conic beam */}
+      {/* Main conic beam — very soft gradient, no hard edges */}
       <motion.div
         ref={beamRef}
         initial={{ opacity: 0, scaleX: 0.05, scaleY: 0.3 }}
@@ -30,13 +30,13 @@ export default function LampEffect() {
         }}
         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full transition-transform duration-[1.5s] ease-out"
         style={{
-          height: "85%",
+          height: "90%",
           background:
-            "conic-gradient(from 270deg at 50% 100%, transparent 30%, rgba(245, 158, 11, 0.06) 37%, rgba(245, 158, 11, 0.12) 45%, rgba(251, 191, 36, 0.15) 50%, rgba(245, 158, 11, 0.12) 55%, rgba(245, 158, 11, 0.06) 63%, transparent 70%)",
+            "conic-gradient(from 270deg at 50% 100%, transparent 32%, rgba(245, 158, 11, 0.02) 36%, rgba(245, 158, 11, 0.05) 40%, rgba(245, 158, 11, 0.09) 44%, rgba(251, 191, 36, 0.12) 48%, rgba(251, 191, 36, 0.13) 50%, rgba(251, 191, 36, 0.12) 52%, rgba(245, 158, 11, 0.09) 56%, rgba(245, 158, 11, 0.05) 60%, rgba(245, 158, 11, 0.02) 64%, transparent 68%)",
           maskImage:
-            "linear-gradient(to top, black 10%, transparent 90%)",
+            "radial-gradient(ellipse 80% 90% at 50% 100%, black 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.2) 60%, transparent 85%)",
           WebkitMaskImage:
-            "linear-gradient(to top, black 10%, transparent 90%)",
+            "radial-gradient(ellipse 80% 90% at 50% 100%, black 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.2) 60%, transparent 85%)",
         }}
       />
 
@@ -45,29 +45,28 @@ export default function LampEffect() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 2, delay: 0.5 }}
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[120%]"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[130%]"
         style={{
-          height: "70%",
+          height: "75%",
           background:
-            "conic-gradient(from 270deg at 50% 100%, transparent 25%, rgba(245, 158, 11, 0.03) 40%, rgba(245, 158, 11, 0.06) 50%, rgba(245, 158, 11, 0.03) 60%, transparent 75%)",
+            "conic-gradient(from 270deg at 50% 100%, transparent 28%, rgba(245, 158, 11, 0.01) 35%, rgba(245, 158, 11, 0.04) 45%, rgba(245, 158, 11, 0.05) 50%, rgba(245, 158, 11, 0.04) 55%, rgba(245, 158, 11, 0.01) 65%, transparent 72%)",
           maskImage:
-            "linear-gradient(to top, black 5%, transparent 80%)",
+            "radial-gradient(ellipse 90% 85% at 50% 100%, black 0%, rgba(0,0,0,0.4) 40%, transparent 75%)",
           WebkitMaskImage:
-            "linear-gradient(to top, black 5%, transparent 80%)",
+            "radial-gradient(ellipse 90% 85% at 50% 100%, black 0%, rgba(0,0,0,0.4) 40%, transparent 75%)",
         }}
       />
 
-      {/* Glow at the base */}
+      {/* Soft glow at the base — no hard 2px line, just a diffused glow */}
       <motion.div
         initial={{ opacity: 0, scaleX: 0 }}
         animate={{ opacity: 1, scaleX: 1 }}
         transition={{ duration: 1.2, delay: 0.1, ease: "easeOut" }}
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[60%] h-[2px]"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[70%] h-[60px]"
         style={{
           background:
-            "linear-gradient(90deg, transparent, #f59e0b, #fbbf24, #f59e0b, transparent)",
-          boxShadow:
-            "0 0 40px 15px rgba(245, 158, 11, 0.3), 0 0 80px 30px rgba(245, 158, 11, 0.15)",
+            "radial-gradient(ellipse at 50% 100%, rgba(245, 158, 11, 0.25) 0%, rgba(251, 191, 36, 0.1) 40%, transparent 70%)",
+          filter: "blur(8px)",
         }}
       />
     </div>

@@ -85,10 +85,11 @@ export default function Home() {
 
           {/* Lamp glow bleeding into About section */}
           <div
-            className="absolute bottom-0 left-0 right-0 translate-y-1/2 h-[200px] pointer-events-none z-[1]"
+            className="absolute bottom-0 left-0 right-0 translate-y-[60%] h-[400px] pointer-events-none z-[1]"
             style={{
               background:
-                "radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.04) 40%, transparent 70%)",
+                "radial-gradient(ellipse 70% 100% at 50% 0%, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.08) 25%, rgba(245, 158, 11, 0.03) 50%, transparent 75%)",
+              filter: "blur(20px)",
             }}
           />
         </section>

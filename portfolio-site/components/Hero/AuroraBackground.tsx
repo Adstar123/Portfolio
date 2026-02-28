@@ -1,26 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-
 export default function AuroraBackground() {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function onMouseMove(e: MouseEvent) {
-      if (!containerRef.current) return;
-      const x = (e.clientX / window.innerWidth - 0.5) * 30;
-      const y = (e.clientY / window.innerHeight - 0.5) * 20;
-      containerRef.current.style.transform = `translate(${x}px, ${y}px)`;
-    }
-    window.addEventListener("mousemove", onMouseMove);
-    return () => window.removeEventListener("mousemove", onMouseMove);
-  }, []);
-
   return (
-    <div
-      ref={containerRef}
-      className="absolute inset-0 overflow-hidden pointer-events-none transition-transform duration-[2s] ease-out"
-    >
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* Amber blob — top left */}
       <div
         className="absolute w-[600px] h-[600px] rounded-full opacity-[0.12]"
