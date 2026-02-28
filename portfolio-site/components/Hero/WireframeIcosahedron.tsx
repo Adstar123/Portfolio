@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useMemo, useEffect, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useRef, useMemo, useEffect, useState, useCallback } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 function Icosahedron() {
@@ -10,6 +10,15 @@ function Icosahedron() {
   const targetRotation = useRef({ x: 0, y: 0 });
   const scrollRef = useRef(0);
   const smoothScale = useRef(1);
+
+  // Drag state
+  const isDragging = useRef(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const smoothPosition = useRef({ x: 0, y: 0 });
+  const dragVelocity = useRef({ x: 0, y: 0 });
+  const lastDragPos = useRef({ x: 0, y: 0 });
+
+  const { viewport } = useThree();
 
   const edgesGeometry = useMemo(() => {
     const ico = new THREE.IcosahedronGeometry(1.8, 1);
@@ -26,7 +35,36 @@ function Icosahedron() {
         x: (e.clientX / window.innerWidth - 0.5) * 2,
         y: -(e.clientY / window.innerHeight - 0.5) * 2,
       };
+
+      if (isDragging.current) {
+        const newX = (e.clientX / window.innerWidth - 0.5) * viewport.width;
+        const newY = -(e.clientY / window.innerHeight - 0.5) * viewport.height;
+        dragVelocity.current = {
+          x: newX - lastDragPos.current.x,
+          y: newY - lastDragPos.current.y,
+        };
+        lastDragPos.current = { x: newX, y: newY };
+        dragOffset.current = { x: newX, y: newY };
+      }
     }
+
+    function onMouseDown(e: MouseEvent) {
+      // Check if click is roughly over the icosahedron (centre area of screen)
+      const nx = Math.abs(e.clientX / window.innerWidth - 0.5);
+      const ny = Math.abs(e.clientY / window.innerHeight - 0.5);
+      if (nx < 0.25 && ny < 0.3) {
+        isDragging.current = true;
+        const startX = (e.clientX / window.innerWidth - 0.5) * viewport.width;
+        const startY = -(e.clientY / window.innerHeight - 0.5) * viewport.height;
+        lastDragPos.current = { x: startX, y: startY };
+        dragVelocity.current = { x: 0, y: 0 };
+      }
+    }
+
+    function onMouseUp() {
+      isDragging.current = false;
+    }
+
     function onScroll() {
       const progress = Math.min(
         window.scrollY / (window.innerHeight * 0.8),
@@ -34,13 +72,18 @@ function Icosahedron() {
       );
       scrollRef.current = progress;
     }
+
     window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mouseup", onMouseUp);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mouseup", onMouseUp);
       window.removeEventListener("scroll", onScroll);
     };
-  }, []);
+  }, [viewport.width, viewport.height]);
 
   useFrame((state) => {
     if (!meshRef.current) return;
@@ -66,8 +109,29 @@ function Icosahedron() {
     meshRef.current.rotation.z +=
       (targetRotation.current.y * 0.7 - meshRef.current.rotation.z) * 0.06;
 
-    // Keep position centred (no drift)
-    meshRef.current.position.set(0, 0, 0);
+    // Drag position — follow drag or spring back to centre
+    if (isDragging.current) {
+      smoothPosition.current.x +=
+        (dragOffset.current.x - smoothPosition.current.x) * 0.15;
+      smoothPosition.current.y +=
+        (dragOffset.current.y - smoothPosition.current.y) * 0.15;
+    } else {
+      // Apply velocity as momentum then decay
+      smoothPosition.current.x += dragVelocity.current.x;
+      smoothPosition.current.y += dragVelocity.current.y;
+      dragVelocity.current.x *= 0.92;
+      dragVelocity.current.y *= 0.92;
+
+      // Spring back to centre
+      smoothPosition.current.x += (0 - smoothPosition.current.x) * 0.03;
+      smoothPosition.current.y += (0 - smoothPosition.current.y) * 0.03;
+    }
+
+    meshRef.current.position.set(
+      smoothPosition.current.x,
+      smoothPosition.current.y,
+      0
+    );
   });
 
   return (
@@ -133,7 +197,7 @@ export default function WireframeIcosahedron() {
   return (
     <div
       className="absolute inset-0 z-[1] transition-opacity duration-1000"
-      style={{ opacity: visible ? 1 : 0 }}
+      style={{ opacity: visible ? 1 : 0, cursor: "grab" }}
     >
       <Canvas
         camera={{ position: [0, 0, 5], fov: 50 }}
