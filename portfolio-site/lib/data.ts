@@ -70,7 +70,7 @@ export const projects: Project[] = [
 export const skillCategories: SkillCategory[] = [
   {
     name: "Languages",
-    colour: "#3b82f6",
+    colour: "#f59e0b",
     skills: [
       { name: "Python", icon: "skill-icons:python-dark", iconType: "iconify" },
       { name: "TypeScript", icon: "skill-icons:typescript", iconType: "iconify" },
@@ -83,7 +83,7 @@ export const skillCategories: SkillCategory[] = [
   },
   {
     name: "Frontend",
-    colour: "#8b5cf6",
+    colour: "#fbbf24",
     skills: [
       { name: "React", icon: "skill-icons:react-dark", iconType: "iconify" },
       { name: "Next.js", icon: "skill-icons:nextjs-dark", iconType: "iconify" },
@@ -94,7 +94,7 @@ export const skillCategories: SkillCategory[] = [
   },
   {
     name: "Backend",
-    colour: "#06b6d4",
+    colour: "#f97316",
     skills: [
       { name: "Node.js", icon: "skill-icons:nodejs-dark", iconType: "iconify" },
       { name: "Flask", icon: "skill-icons:flask-dark", iconType: "iconify" },
@@ -106,7 +106,7 @@ export const skillCategories: SkillCategory[] = [
   },
   {
     name: "DevOps",
-    colour: "#22d3ee",
+    colour: "#ef4444",
     skills: [
       { name: "Docker", icon: "skill-icons:docker", iconType: "iconify" },
       { name: "Kubernetes", icon: "skill-icons:kubernetes", iconType: "iconify" },

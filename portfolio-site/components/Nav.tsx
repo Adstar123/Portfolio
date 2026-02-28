@@ -81,7 +81,7 @@ export default function Nav() {
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               className="group font-heading text-xl font-bold text-text-primary transition-colors"
             >
-              <span className="group-hover:gradient-text transition-all">
+              <span className="group-hover:text-accent-amber transition-all">
                 Adam Jarick
               </span>
             </button>
@@ -107,7 +107,7 @@ export default function Nav() {
                     {isActive && (
                       <motion.div
                         layoutId="nav-underline"
-                        className="absolute -bottom-0.5 left-0 right-0 h-0.5 rounded-full bg-gradient-to-r from-accent-blue via-accent-purple to-accent-cyan"
+                        className="absolute -bottom-0.5 left-0 right-0 h-0.5 rounded-full bg-accent-amber"
                         transition={{
                           type: "spring",
                           stiffness: 350,

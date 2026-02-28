@@ -89,7 +89,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                     href={project.github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 text-white font-heading font-semibold text-sm hover:scale-105 transition-transform"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent-amber hover:bg-accent-amber-hover text-black font-heading font-semibold text-sm hover:scale-105 transition-all"
                   >
                     <Github className="w-4 h-4" />
                     GitHub

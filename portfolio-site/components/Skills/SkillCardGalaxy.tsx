@@ -94,7 +94,7 @@ export default function SkillCardGalaxy() {
         <div
           className="absolute w-[500px] h-[500px] rounded-full opacity-[0.03]"
           style={{
-            background: "radial-gradient(circle, #3b82f6, transparent 70%)",
+            background: "radial-gradient(circle, #f59e0b, transparent 70%)",
             top: "10%",
             left: "-10%",
             animation: "float 20s ease-in-out infinite",
@@ -103,7 +103,7 @@ export default function SkillCardGalaxy() {
         <div
           className="absolute w-[400px] h-[400px] rounded-full opacity-[0.03]"
           style={{
-            background: "radial-gradient(circle, #8b5cf6, transparent 70%)",
+            background: "radial-gradient(circle, #fbbf24, transparent 70%)",
             top: "50%",
             right: "-5%",
             animation: "float 25s ease-in-out infinite reverse",
@@ -112,7 +112,7 @@ export default function SkillCardGalaxy() {
         <div
           className="absolute w-[450px] h-[450px] rounded-full opacity-[0.03]"
           style={{
-            background: "radial-gradient(circle, #06b6d4, transparent 70%)",
+            background: "radial-gradient(circle, #ef4444, transparent 70%)",
             bottom: "-10%",
             left: "30%",
             animation: "float 22s ease-in-out infinite 3s",

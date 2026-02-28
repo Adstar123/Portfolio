@@ -37,14 +37,14 @@ export default function About() {
             className="relative"
           >
             {/* Gradient glow behind */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-accent-blue via-accent-purple to-accent-cyan opacity-20 blur-2xl scale-110" />
+            <div className="absolute inset-0 rounded-full bg-accent-amber opacity-20 blur-2xl scale-110" />
 
             {/* Animated gradient border */}
             <div
               className="relative rounded-full p-1"
               style={{
                 background:
-                  "linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4)",
+                  "linear-gradient(135deg, #f59e0b, #ef4444, #fbbf24)",
                 backgroundSize: "200% 200%",
                 animation: "gradient-shift 8s ease infinite",
               }}
@@ -77,7 +77,7 @@ export default function About() {
               className="mt-3 h-1 w-24 origin-left rounded-full"
               style={{
                 background:
-                  "linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4)",
+                  "linear-gradient(90deg, #f59e0b, #ef4444)",
               }}
             />
           </div>

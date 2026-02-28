@@ -23,8 +23,8 @@ export default function CategoryTabs({ active, onChange }: CategoryTabsProps) {
         const isActive = active === cat;
         const colour =
           cat === "All"
-            ? "#8b5cf6"
-            : skillCategories.find((c) => c.name === cat)?.colour ?? "#8b5cf6";
+            ? "#f59e0b"
+            : skillCategories.find((c) => c.name === cat)?.colour ?? "#f59e0b";
 
         return (
           <motion.button
@@ -38,7 +38,7 @@ export default function CategoryTabs({ active, onChange }: CategoryTabsProps) {
             style={{
               background: isActive ? `${colour}15` : "transparent",
               border: `1px solid ${isActive ? `${colour}40` : "rgba(255,255,255,0.05)"}`,
-              color: isActive ? colour : "#94a3b8",
+              color: isActive ? colour : "#a3a3a3",
             }}
             whileHover={{
               scale: 1.05,

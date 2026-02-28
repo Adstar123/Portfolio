@@ -88,11 +88,11 @@ export default function Contact() {
                 setFormState((s) => ({ ...s, name: e.target.value }))
               }
               placeholder="Name"
-              className="peer w-full bg-surface border border-white/5 rounded-xl px-5 pt-6 pb-2 font-body text-text-primary outline-none placeholder-transparent focus:border-transparent focus:ring-2 focus:ring-accent-purple/50 transition-all"
+              className="peer w-full bg-surface border border-white/5 rounded-xl px-5 pt-6 pb-2 font-body text-text-primary outline-none placeholder-transparent focus:border-transparent focus:ring-2 focus:ring-accent-amber/50 transition-all"
             />
             <label
               htmlFor="name"
-              className="absolute left-5 top-4 text-text-secondary text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-accent-purple peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-xs"
+              className="absolute left-5 top-4 text-text-secondary text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-accent-amber peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-xs"
             >
               Name
             </label>
@@ -116,11 +116,11 @@ export default function Contact() {
                 setFormState((s) => ({ ...s, email: e.target.value }))
               }
               placeholder="Email"
-              className="peer w-full bg-surface border border-white/5 rounded-xl px-5 pt-6 pb-2 font-body text-text-primary outline-none placeholder-transparent focus:border-transparent focus:ring-2 focus:ring-accent-purple/50 transition-all"
+              className="peer w-full bg-surface border border-white/5 rounded-xl px-5 pt-6 pb-2 font-body text-text-primary outline-none placeholder-transparent focus:border-transparent focus:ring-2 focus:ring-accent-amber/50 transition-all"
             />
             <label
               htmlFor="email"
-              className="absolute left-5 top-4 text-text-secondary text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-accent-purple peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-xs"
+              className="absolute left-5 top-4 text-text-secondary text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-accent-amber peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-xs"
             >
               Email
             </label>
@@ -144,11 +144,11 @@ export default function Contact() {
                 setFormState((s) => ({ ...s, message: e.target.value }))
               }
               placeholder="Message"
-              className="peer w-full bg-surface border border-white/5 rounded-xl px-5 pt-6 pb-2 font-body text-text-primary outline-none placeholder-transparent resize-none focus:border-transparent focus:ring-2 focus:ring-accent-purple/50 transition-all"
+              className="peer w-full bg-surface border border-white/5 rounded-xl px-5 pt-6 pb-2 font-body text-text-primary outline-none placeholder-transparent resize-none focus:border-transparent focus:ring-2 focus:ring-accent-amber/50 transition-all"
             />
             <label
               htmlFor="message"
-              className="absolute left-5 top-4 text-text-secondary text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-accent-purple peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-xs"
+              className="absolute left-5 top-4 text-text-secondary text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-accent-amber peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-xs"
             >
               Message
             </label>
@@ -166,13 +166,7 @@ export default function Contact() {
               disabled={status === "sending"}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-4 rounded-xl font-heading font-bold text-white flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-              style={{
-                background:
-                  "linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4)",
-                backgroundSize: "200% 200%",
-                animation: "gradient-shift 8s ease infinite",
-              }}
+              className="w-full py-4 rounded-xl font-heading font-bold text-black flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed bg-accent-amber hover:bg-accent-amber-hover transition-colors"
             >
               {status === "idle" && (
                 <>
@@ -219,7 +213,7 @@ export default function Contact() {
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.4, delay: 0.6 + i * 0.1 }}
                 whileHover={{ scale: 1.2, y: -2 }}
-                className="p-3 rounded-full bg-surface border border-white/5 text-text-secondary hover:text-text-primary hover:glow-gradient transition-colors"
+                className="p-3 rounded-full bg-surface border border-white/5 text-text-secondary hover:text-text-primary hover:glow-amber transition-colors"
               >
                 <Icon size={20} />
               </motion.a>

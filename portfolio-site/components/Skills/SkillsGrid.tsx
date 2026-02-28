@@ -48,7 +48,7 @@ export default function SkillsGrid() {
                     ease: "easeOut",
                   }}
                   whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-2 px-3 py-2 rounded-full bg-surface border border-white/5 text-sm text-text-secondary cursor-default transition-shadow duration-200 hover:glow-gradient"
+                  className="flex items-center gap-2 px-3 py-2 rounded-full bg-surface border border-white/5 text-sm text-text-secondary cursor-default transition-shadow duration-200 hover:glow-amber"
                 >
                   {skill.iconType === "iconify" ? (
                     <Icon icon={skill.icon} width={20} height={20} />

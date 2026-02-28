@@ -82,7 +82,7 @@ export default function ProjectCard({
           className="absolute -inset-2 rounded-3xl blur-xl transition-opacity duration-500"
           style={{
             background:
-              "linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4)",
+              "radial-gradient(circle, rgba(245, 158, 11, 0.4), transparent 70%)",
             opacity: isHovered ? 0.15 : 0,
           }}
         />
@@ -92,7 +92,7 @@ export default function ProjectCard({
           className="absolute -inset-px rounded-2xl transition-opacity duration-500"
           style={{
             background:
-              "linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4)",
+              "linear-gradient(135deg, #f59e0b, #ef4444, #fbbf24)",
             backgroundSize: "200% 200%",
             animation: "gradient-shift 8s ease infinite",
             opacity: isHovered ? 1 : 0.3,
@@ -116,7 +116,7 @@ export default function ProjectCard({
           <div
             className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-300"
             style={{
-              background: `radial-gradient(circle at ${spotlight.x}% ${spotlight.y}%, rgba(139,92,246,0.08) 0%, transparent 60%)`,
+              background: `radial-gradient(circle at ${spotlight.x}% ${spotlight.y}%, rgba(245,158,11,0.08) 0%, transparent 60%)`,
               opacity: isHovered ? 1 : 0,
             }}
           />

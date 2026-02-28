@@ -60,7 +60,7 @@ export default function Home() {
                 className="mt-3 h-1 w-24 mx-auto origin-center rounded-full"
                 style={{
                   background:
-                    "linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4)",
+                    "linear-gradient(90deg, #f59e0b, #ef4444)",
                 }}
               />
             </motion.div>
@@ -96,7 +96,7 @@ export default function Home() {
                 className="mt-3 h-1 w-24 mx-auto origin-center rounded-full"
                 style={{
                   background:
-                    "linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4)",
+                    "linear-gradient(90deg, #f59e0b, #ef4444)",
                 }}
               />
             </motion.div>

@@ -86,12 +86,12 @@ export default function SkillCard({
       className="relative cursor-pointer select-none"
     >
       <div
-        className="relative overflow-hidden rounded-xl p-4 flex flex-col items-center gap-3 w-[100px] h-[110px]"
+        className="relative overflow-hidden rounded-xl p-4 flex flex-col items-center gap-3 w-[100px] h-[110px] grain"
         style={{
-          background: "rgba(18, 18, 26, 0.6)",
+          background: "rgba(20, 20, 20, 0.8)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          border: `1px solid ${isHovered ? `${colour}60` : "rgba(255,255,255,0.05)"}`,
+          border: `1px solid ${isHovered ? `${colour}60` : "#262626"}`,
           borderLeft: `2px solid ${isHovered ? colour : `${colour}30`}`,
           boxShadow: isHovered
             ? `0 0 20px ${colour}20, 0 0 40px ${colour}10, 0 8px 32px rgba(0,0,0,0.4)`
@@ -123,7 +123,7 @@ export default function SkillCard({
         <span
           className="relative z-10 font-mono text-xs text-center leading-tight"
           style={{
-            color: isHovered ? colour : "#94a3b8",
+            color: isHovered ? colour : "#a3a3a3",
             transition: "color 0.2s",
           }}
         >
