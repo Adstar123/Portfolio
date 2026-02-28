@@ -1,32 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 
 const name = "Adam Jarick";
 const subtitle = "Software Engineer";
 
 export default function HeroText() {
-  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    const x = (e.clientX / window.innerWidth - 0.5) * 20;
-    const y = (e.clientY / window.innerHeight - 0.5) * 10;
-    setMouseOffset({ x, y });
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [handleMouseMove]);
-
   return (
     <motion.div
       className="relative z-10 flex flex-col items-center justify-center text-center pointer-events-none select-none"
-      style={{
-        transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)`,
-        transition: "transform 0.15s ease-out",
-      }}
     >
       {/* Name staggered letter reveal */}
       <h1 className="font-heading text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight">

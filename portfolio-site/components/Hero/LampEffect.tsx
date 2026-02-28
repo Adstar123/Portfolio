@@ -1,26 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 
 export default function LampEffect() {
-  const beamRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function onMouseMove(e: MouseEvent) {
-      if (!beamRef.current) return;
-      const tilt = (e.clientX / window.innerWidth - 0.5) * 6;
-      beamRef.current.style.transform = `perspective(1000px) rotateY(${tilt}deg)`;
-    }
-    window.addEventListener("mousemove", onMouseMove);
-    return () => window.removeEventListener("mousemove", onMouseMove);
-  }, []);
-
   return (
     <div className="absolute inset-0 pointer-events-none">
       {/* Main conic beam — very soft gradient, no hard edges */}
       <motion.div
-        ref={beamRef}
         initial={{ opacity: 0, scaleX: 0.05, scaleY: 0.3 }}
         animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
         transition={{
@@ -28,7 +14,7 @@ export default function LampEffect() {
           ease: [0.16, 1, 0.3, 1],
           delay: 0.2,
         }}
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full transition-transform duration-[1.5s] ease-out"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full"
         style={{
           height: "90%",
           background:
@@ -57,7 +43,7 @@ export default function LampEffect() {
         }}
       />
 
-      {/* Soft glow at the base — no hard 2px line, just a diffused glow */}
+      {/* Soft glow at the base */}
       <motion.div
         initial={{ opacity: 0, scaleX: 0 }}
         animate={{ opacity: 1, scaleX: 1 }}

@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import Nav from "@/components/Nav";
 import ScrollProgress from "@/components/ScrollProgress";
 import HeroText from "@/components/Hero/HeroText";
@@ -52,7 +52,20 @@ function SectionDivider() {
 
 export default function Home() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    // Wait for fonts + minimum delay so layout settles before revealing
+    const minDelay = new Promise((r) => setTimeout(r, 400));
+    const fontsReady = document.fonts
+      ? document.fonts.ready
+      : Promise.resolve();
+
+    Promise.all([minDelay, fontsReady]).then(() => {
+      requestAnimationFrame(() => setLoaded(true));
+    });
+  }, []);
 
   const { scrollYProgress: heroProgress } = useScroll({
     target: heroRef,
@@ -64,6 +77,18 @@ export default function Home() {
 
   return (
     <>
+      {/* Loading gate — black overlay until page is ready */}
+      <AnimatePresence>
+        {!loaded && (
+          <motion.div
+            key="loader"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="fixed inset-0 z-[100] bg-background"
+          />
+        )}
+      </AnimatePresence>
+
       <Nav />
       <ScrollProgress />
       <main>
@@ -72,16 +97,20 @@ export default function Home() {
           ref={heroRef}
           className="relative h-screen flex items-center justify-center bg-background"
         >
-          <motion.div
-            style={{ opacity: heroOpacity }}
-            className="absolute inset-0 overflow-hidden"
-          >
-            <ParticleField />
-          </motion.div>
-          <motion.div style={{ scale: heroScale, opacity: heroOpacity, y: heroY }}>
-            <HeroText />
-          </motion.div>
-          <ScrollIndicator />
+          {loaded && (
+            <>
+              <motion.div
+                style={{ opacity: heroOpacity }}
+                className="absolute inset-0 overflow-hidden"
+              >
+                <ParticleField />
+              </motion.div>
+              <motion.div style={{ scale: heroScale, opacity: heroOpacity, y: heroY }}>
+                <HeroText />
+              </motion.div>
+              <ScrollIndicator />
+            </>
+          )}
 
           {/* Lamp glow bleeding into About section */}
           <div
