@@ -13,10 +13,11 @@ function Icosahedron() {
 
   // Drag state
   const isDragging = useRef(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
+  const dragTarget = useRef({ x: 0, y: 0 });
   const smoothPosition = useRef({ x: 0, y: 0 });
   const dragVelocity = useRef({ x: 0, y: 0 });
   const lastDragPos = useRef({ x: 0, y: 0 });
+  const grabOffset = useRef({ x: 0, y: 0 });
 
   const { viewport } = useThree();
 
@@ -37,14 +38,16 @@ function Icosahedron() {
       };
 
       if (isDragging.current) {
-        const newX = (e.clientX / window.innerWidth - 0.5) * viewport.width;
-        const newY = -(e.clientY / window.innerHeight - 0.5) * viewport.height;
+        const rawX = (e.clientX / window.innerWidth - 0.5) * viewport.width;
+        const rawY = -(e.clientY / window.innerHeight - 0.5) * viewport.height;
+        const newX = rawX - grabOffset.current.x;
+        const newY = rawY - grabOffset.current.y;
         dragVelocity.current = {
           x: newX - lastDragPos.current.x,
           y: newY - lastDragPos.current.y,
         };
         lastDragPos.current = { x: newX, y: newY };
-        dragOffset.current = { x: newX, y: newY };
+        dragTarget.current = { x: newX, y: newY };
       }
     }
 
@@ -54,9 +57,17 @@ function Icosahedron() {
       const ny = Math.abs(e.clientY / window.innerHeight - 0.5);
       if (nx < 0.25 && ny < 0.3) {
         isDragging.current = true;
-        const startX = (e.clientX / window.innerWidth - 0.5) * viewport.width;
-        const startY = -(e.clientY / window.innerHeight - 0.5) * viewport.height;
-        lastDragPos.current = { x: startX, y: startY };
+        const clickX = (e.clientX / window.innerWidth - 0.5) * viewport.width;
+        const clickY = -(e.clientY / window.innerHeight - 0.5) * viewport.height;
+        // Store offset between click and shape's current position
+        grabOffset.current = {
+          x: clickX - smoothPosition.current.x,
+          y: clickY - smoothPosition.current.y,
+        };
+        lastDragPos.current = {
+          x: smoothPosition.current.x,
+          y: smoothPosition.current.y,
+        };
         dragVelocity.current = { x: 0, y: 0 };
       }
     }
@@ -112,9 +123,9 @@ function Icosahedron() {
     // Drag position — follow drag or spring back to centre
     if (isDragging.current) {
       smoothPosition.current.x +=
-        (dragOffset.current.x - smoothPosition.current.x) * 0.15;
+        (dragTarget.current.x - smoothPosition.current.x) * 0.15;
       smoothPosition.current.y +=
-        (dragOffset.current.y - smoothPosition.current.y) * 0.15;
+        (dragTarget.current.y - smoothPosition.current.y) * 0.15;
     } else {
       // Apply velocity as momentum then decay
       smoothPosition.current.x += dragVelocity.current.x;
