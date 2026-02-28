@@ -10,6 +10,7 @@ function Icosahedron() {
   const targetRotation = useRef({ x: 0, y: 0 });
   const scrollRef = useRef(0);
   const smoothScale = useRef(1);
+  const introProgress = useRef(0);
 
   // Drag state
   const isDragging = useRef(false);
@@ -106,11 +107,18 @@ function Icosahedron() {
 
     const t = state.clock.elapsedTime;
 
+    // Intro scale-up: ease from 0 to 1 over ~1.5 seconds
+    if (introProgress.current < 1) {
+      introProgress.current = Math.min(introProgress.current + 0.012, 1);
+    }
+    // Smooth ease-out curve for intro
+    const introScale = 1 - Math.pow(1 - introProgress.current, 3);
+
     // Smooth scroll-based scale (lerp for buttery smooth)
     const targetScale =
       (1 - scrollRef.current * 0.3) * (1 + Math.sin(t * 0.5) * 0.05);
     smoothScale.current += (targetScale - smoothScale.current) * 0.08;
-    meshRef.current.scale.setScalar(smoothScale.current);
+    meshRef.current.scale.setScalar(smoothScale.current * introScale);
 
     // Slow base rotation
     meshRef.current.rotation.y = t * 0.15;
@@ -201,19 +209,30 @@ function Icosahedron() {
 }
 
 export default function WireframeIcosahedron() {
+  const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), 600);
-    return () => clearTimeout(timer);
+    // Stage 1: mount the canvas (hidden)
+    const mountTimer = setTimeout(() => setMounted(true), 400);
+    // Stage 2: fade in after canvas has had a frame to render
+    const showTimer = setTimeout(() => setVisible(true), 600);
+    return () => {
+      clearTimeout(mountTimer);
+      clearTimeout(showTimer);
+    };
   }, []);
 
-  if (!visible) return null;
+  if (!mounted) return null;
 
   return (
     <div
-      className="absolute inset-0 z-[1] transition-opacity duration-1000"
-      style={{ opacity: visible ? 1 : 0, cursor: "grab" }}
+      className="absolute inset-0 z-[1]"
+      style={{
+        opacity: visible ? 1 : 0,
+        transition: "opacity 1.2s ease-out",
+        cursor: "grab",
+      }}
     >
       <Canvas
         camera={{ position: [0, 0, 5], fov: 50 }}

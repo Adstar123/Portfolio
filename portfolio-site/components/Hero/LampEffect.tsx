@@ -7,11 +7,11 @@ export default function LampEffect() {
     <div className="absolute inset-0 pointer-events-none">
       {/* Main conic beam — very soft gradient, no hard edges */}
       <motion.div
-        initial={{ opacity: 0, scaleX: 0.05, scaleY: 0.3 }}
-        animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{
-          duration: 1.5,
-          ease: [0.16, 1, 0.3, 1],
+          duration: 2,
+          ease: "easeOut",
           delay: 0.2,
         }}
         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full"
@@ -45,9 +45,9 @@ export default function LampEffect() {
 
       {/* Soft glow at the base */}
       <motion.div
-        initial={{ opacity: 0, scaleX: 0 }}
-        animate={{ opacity: 1, scaleX: 1 }}
-        transition={{ duration: 1.2, delay: 0.1, ease: "easeOut" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.5, delay: 0.1, ease: "easeOut" }}
         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[70%] h-[60px]"
         style={{
           background:
