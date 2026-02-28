@@ -64,6 +64,11 @@ function Icosahedron() {
           x: clickX - smoothPosition.current.x,
           y: clickY - smoothPosition.current.y,
         };
+        // Set drag target to current position so it doesn't snap before first mousemove
+        dragTarget.current = {
+          x: smoothPosition.current.x,
+          y: smoothPosition.current.y,
+        };
         lastDragPos.current = {
           x: smoothPosition.current.x,
           y: smoothPosition.current.y,
