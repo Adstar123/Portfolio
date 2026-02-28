@@ -7,7 +7,7 @@ import Nav from "@/components/Nav";
 import HeroText from "@/components/Hero/HeroText";
 import ScrollIndicator from "@/components/Hero/ScrollIndicator";
 import About from "@/components/About";
-import OrbitalRings from "@/components/Skills/OrbitalRings";
+import SkillCardGalaxy from "@/components/Skills/SkillCardGalaxy";
 import SkillsGrid from "@/components/Skills/SkillsGrid";
 import ProjectCard from "@/components/Projects/ProjectCard";
 import ProjectModal from "@/components/Projects/ProjectModal";
@@ -40,7 +40,7 @@ export default function Home() {
         {/* Skills */}
         <section
           id="skills"
-          className="relative min-h-screen py-24 md:py-32 px-6 bg-background"
+          className="relative min-h-screen py-24 md:py-32 px-6 bg-background overflow-hidden"
         >
           <div className="mx-auto max-w-6xl">
             <motion.div
@@ -65,7 +65,7 @@ export default function Home() {
               />
             </motion.div>
             <div className="hidden md:block">
-              <OrbitalRings />
+              <SkillCardGalaxy />
             </div>
             <div className="md:hidden">
               <SkillsGrid />
