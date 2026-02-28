@@ -60,8 +60,18 @@ export default function SkillCard({
         setIsHovered(false);
         setMousePos({ x: 0.5, y: 0.5 });
       }}
-      initial={{ scale: 0, rotate: rotation + 10 }}
-      whileInView={{ scale: 1, rotate: rotation }}
+      initial={{
+        scale: 0,
+        rotate: rotation + (index % 2 === 0 ? -15 : 15),
+        x: index % 2 === 0 ? -200 : 200,
+        opacity: 0,
+      }}
+      whileInView={{
+        scale: 1,
+        rotate: rotation,
+        x: 0,
+        opacity: 1,
+      }}
       viewport={{ once: true, margin: "-30px" }}
       transition={{
         type: "spring",

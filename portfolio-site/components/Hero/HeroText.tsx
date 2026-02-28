@@ -1,13 +1,33 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 
 const name = "Adam Jarick";
 const subtitle = "Software Engineer";
 
 export default function HeroText() {
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 20;
+    const y = (e.clientY / window.innerHeight - 0.5) * 10;
+    setMouseOffset({ x, y });
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [handleMouseMove]);
+
   return (
-    <div className="relative z-10 flex flex-col items-center justify-center text-center pointer-events-none select-none">
+    <motion.div
+      className="relative z-10 flex flex-col items-center justify-center text-center pointer-events-none select-none"
+      style={{
+        transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)`,
+        transition: "transform 0.15s ease-out",
+      }}
+    >
       {/* Name staggered letter reveal */}
       <h1 className="font-heading text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight">
         {name.split("").map((char, i) => (
@@ -20,8 +40,11 @@ export default function HeroText() {
               delay: i * 0.05,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
-            className="inline-block gradient-text"
-            style={{ minWidth: char === " " ? "0.3em" : undefined }}
+            className="inline-block text-text-primary"
+            style={{
+              minWidth: char === " " ? "0.3em" : undefined,
+              textShadow: "0 0 80px rgba(245, 158, 11, 0.3)",
+            }}
           >
             {char === " " ? "\u00A0" : char}
           </motion.span>
@@ -59,7 +82,7 @@ export default function HeroText() {
             repeat: Infinity,
             repeatType: "loop",
           }}
-          className="font-mono text-lg sm:text-xl md:text-2xl text-accent-purple ml-0.5"
+          className="font-mono text-lg sm:text-xl md:text-2xl text-accent-amber ml-0.5"
         >
           |
         </motion.span>
@@ -67,8 +90,8 @@ export default function HeroText() {
 
       {/* Subtle glow behind text */}
       <div className="absolute inset-0 -z-10 flex items-center justify-center">
-        <div className="w-[600px] h-[200px] bg-accent-purple/10 blur-[100px] rounded-full" />
+        <div className="w-[600px] h-[200px] bg-accent-amber/10 blur-[100px] rounded-full" />
       </div>
-    </div>
+    </motion.div>
   );
 }
