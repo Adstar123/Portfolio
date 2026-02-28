@@ -30,8 +30,8 @@ export default function About() {
         <div className="order-1 md:order-2 md:col-span-2 flex justify-center">
           <motion.div
             style={{ y: photoY }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.7, rotate: -3 }}
+            whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ type: "spring", stiffness: 80, damping: 20 }}
             className="relative"
@@ -86,12 +86,12 @@ export default function About() {
           {paragraphs.map((text, i) => (
             <motion.p
               key={i}
-              initial={{ opacity: 0, x: -40 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, x: -60, y: 20 }}
+              whileInView={{ opacity: 1, x: 0, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{
                 duration: 0.6,
-                delay: 0.3 + i * 0.15,
+                delay: 0.3 + i * 0.2,
                 ease: "easeOut",
               }}
               className="font-body text-lg leading-relaxed text-text-secondary mb-5 last:mb-0"

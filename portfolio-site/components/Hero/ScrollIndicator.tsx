@@ -8,7 +8,7 @@ export default function ScrollIndicator() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ delay: 2.5 }}
+      transition={{ delay: 3.5 }}
       className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
     >
       <span className="font-body text-xs text-text-secondary/60 tracking-widest uppercase">

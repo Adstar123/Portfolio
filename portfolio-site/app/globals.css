@@ -53,6 +53,9 @@
   --animate-gradient-shift: gradient-shift 8s ease infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
+  --animate-aurora-1: aurora-drift-1 18s ease-in-out infinite;
+  --animate-aurora-2: aurora-drift-2 22s ease-in-out infinite;
+  --animate-aurora-3: aurora-drift-3 15s ease-in-out infinite;
 }
 
 :root {
@@ -108,6 +111,7 @@
 html {
   background-color: #0a0a0a;
   color: #fafafa;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -154,6 +158,46 @@ body {
   }
 }
 
+@keyframes aurora-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -20px) scale(1.05); }
+  50% { transform: translate(-20px, 15px) scale(0.95); }
+  75% { transform: translate(15px, 25px) scale(1.02); }
+}
+
+@keyframes aurora-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-25px, 20px) scale(1.03); }
+  66% { transform: translate(20px, -15px) scale(0.97); }
+}
+
+@keyframes aurora-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  20% { transform: translate(15px, 20px) scale(0.98); }
+  60% { transform: translate(-30px, -10px) scale(1.04); }
+}
+
+@keyframes spark-rise {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(var(--drift-x, 20px)) scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 0.03; }
+  50% { opacity: 0.06; }
+}
 
 /* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {

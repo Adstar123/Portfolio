@@ -89,44 +89,21 @@ export default function SkillCardGalaxy() {
 
   return (
     <div className="relative">
-      {/* Background ambient orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute w-[500px] h-[500px] rounded-full opacity-[0.03]"
-          style={{
-            background: "radial-gradient(circle, #f59e0b, transparent 70%)",
-            top: "10%",
-            left: "-10%",
-            animation: "float 20s ease-in-out infinite",
-          }}
-        />
-        <div
-          className="absolute w-[400px] h-[400px] rounded-full opacity-[0.03]"
-          style={{
-            background: "radial-gradient(circle, #fbbf24, transparent 70%)",
-            top: "50%",
-            right: "-5%",
-            animation: "float 25s ease-in-out infinite reverse",
-          }}
-        />
-        <div
-          className="absolute w-[450px] h-[450px] rounded-full opacity-[0.03]"
-          style={{
-            background: "radial-gradient(circle, #ef4444, transparent 70%)",
-            bottom: "-10%",
-            left: "30%",
-            animation: "float 22s ease-in-out infinite 3s",
-          }}
-        />
-      </div>
-
-      {/* Dot grid background */}
+      {/* Large feathered radial glow */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        className="absolute pointer-events-none"
         style={{
-          backgroundImage:
-            "radial-gradient(circle, #f8fafc 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
+          top: "-25%",
+          left: "-10%",
+          width: "120%",
+          height: "150%",
+          background:
+            "radial-gradient(ellipse at 50% 50%, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.03) 30%, transparent 70%)",
+          maskImage:
+            "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+          WebkitMaskImage:
+            "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+          animation: "gentle-pulse 4s ease-in-out infinite",
         }}
       />
 

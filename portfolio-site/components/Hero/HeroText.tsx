@@ -33,11 +33,11 @@ export default function HeroText() {
         {name.split("").map((char, i) => (
           <motion.span
             key={i}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 60, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{
               duration: 0.5,
-              delay: i * 0.05,
+              delay: 0.8 + i * 0.05,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
             className="inline-block text-text-primary"
@@ -55,7 +55,7 @@ export default function HeroText() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: name.length * 0.05 + 0.3, duration: 0.5 }}
+        transition={{ delay: name.length * 0.05 + 1.1, duration: 0.5 }}
         className="mt-4 md:mt-6 flex items-center gap-0"
       >
         {subtitle.split("").map((char, i) => (
@@ -64,7 +64,7 @@ export default function HeroText() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{
-              delay: name.length * 0.05 + 0.5 + i * 0.04,
+              delay: name.length * 0.05 + 1.3 + i * 0.04,
               duration: 0.01,
             }}
             className="font-body text-lg sm:text-xl md:text-2xl text-text-secondary"
@@ -77,7 +77,7 @@ export default function HeroText() {
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 1, 0] }}
           transition={{
-            delay: name.length * 0.05 + 0.5 + subtitle.length * 0.04,
+            delay: name.length * 0.05 + 1.3 + subtitle.length * 0.04,
             duration: 0.8,
             repeat: Infinity,
             repeatType: "loop",
