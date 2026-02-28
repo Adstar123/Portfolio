@@ -8,7 +8,7 @@ const subtitle = "Software Engineer";
 export default function HeroText() {
   return (
     <div className="relative z-10 flex flex-col items-center justify-center text-center pointer-events-none select-none">
-      {/* Name — staggered letter reveal */}
+      {/* Name staggered letter reveal */}
       <h1 className="font-heading text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight">
         {name.split("").map((char, i) => (
           <motion.span

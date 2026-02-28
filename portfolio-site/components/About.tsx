@@ -6,7 +6,7 @@ import { motion, useScroll, useTransform } from "motion/react";
 import { bio } from "@/lib/data";
 
 const paragraphs = [
-  `${bio.greeting} — ${bio.intro}`,
+  `${bio.greeting}, ${bio.intro}`,
   bio.current,
   bio.hobby,
 ];
