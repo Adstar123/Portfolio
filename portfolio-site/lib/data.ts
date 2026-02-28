@@ -8,10 +8,16 @@ export interface Project {
   live?: string;
 }
 
+export interface Skill {
+  name: string;
+  icon: string;
+  iconType: "iconify" | "lucide";
+}
+
 export interface SkillCategory {
   name: string;
-  ring: number;
-  skills: string[];
+  colour: string;
+  skills: Skill[];
 }
 
 export interface SocialLink {
@@ -64,30 +70,51 @@ export const projects: Project[] = [
 export const skillCategories: SkillCategory[] = [
   {
     name: "Languages",
-    ring: 1,
-    skills: ["Python", "TypeScript", "JavaScript", "SQL", "Dart", "HTML/CSS"],
+    colour: "#3b82f6",
+    skills: [
+      { name: "Python", icon: "skill-icons:python-dark", iconType: "iconify" },
+      { name: "TypeScript", icon: "skill-icons:typescript", iconType: "iconify" },
+      { name: "JavaScript", icon: "skill-icons:javascript", iconType: "iconify" },
+      { name: "SQL", icon: "skill-icons:mysql-dark", iconType: "iconify" },
+      { name: "Dart", icon: "skill-icons:dart-dark", iconType: "iconify" },
+      { name: "HTML", icon: "skill-icons:html", iconType: "iconify" },
+      { name: "CSS", icon: "skill-icons:css", iconType: "iconify" },
+    ],
   },
   {
     name: "Frontend",
-    ring: 2,
-    skills: ["React", "Next.js", "Tailwind", "Electron", "Figma"],
+    colour: "#8b5cf6",
+    skills: [
+      { name: "React", icon: "skill-icons:react-dark", iconType: "iconify" },
+      { name: "Next.js", icon: "skill-icons:nextjs-dark", iconType: "iconify" },
+      { name: "Tailwind", icon: "skill-icons:tailwind-dark", iconType: "iconify" },
+      { name: "Electron", icon: "skill-icons:electron", iconType: "iconify" },
+      { name: "Figma", icon: "skill-icons:figma-dark", iconType: "iconify" },
+    ],
   },
   {
     name: "Backend",
-    ring: 3,
-    skills: ["Node.js", "Flask", "PostgreSQL", "Prisma", "REST APIs", "PyTorch"],
+    colour: "#06b6d4",
+    skills: [
+      { name: "Node.js", icon: "skill-icons:nodejs-dark", iconType: "iconify" },
+      { name: "Flask", icon: "skill-icons:flask-dark", iconType: "iconify" },
+      { name: "PostgreSQL", icon: "skill-icons:postgresql-dark", iconType: "iconify" },
+      { name: "Prisma", icon: "skill-icons:prisma", iconType: "iconify" },
+      { name: "REST APIs", icon: "globe", iconType: "lucide" },
+      { name: "PyTorch", icon: "skill-icons:pytorch-dark", iconType: "iconify" },
+    ],
   },
   {
     name: "DevOps",
-    ring: 4,
+    colour: "#22d3ee",
     skills: [
-      "Docker",
-      "Kubernetes",
-      "AWS",
-      "Azure",
-      "GCloud",
-      "Terraform",
-      "CI/CD",
+      { name: "Docker", icon: "skill-icons:docker", iconType: "iconify" },
+      { name: "Kubernetes", icon: "skill-icons:kubernetes", iconType: "iconify" },
+      { name: "AWS", icon: "skill-icons:aws-dark", iconType: "iconify" },
+      { name: "Azure", icon: "skill-icons:azure-dark", iconType: "iconify" },
+      { name: "GCloud", icon: "skill-icons:gcp-dark", iconType: "iconify" },
+      { name: "Terraform", icon: "skill-icons:terraform-dark", iconType: "iconify" },
+      { name: "CI/CD", icon: "skill-icons:githubactions-dark", iconType: "iconify" },
     ],
   },
 ];
