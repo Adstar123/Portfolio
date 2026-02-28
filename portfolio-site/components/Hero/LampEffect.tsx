@@ -17,7 +17,7 @@ export default function LampEffect() {
   }, []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 pointer-events-none">
       {/* Main conic beam */}
       <motion.div
         ref={beamRef}

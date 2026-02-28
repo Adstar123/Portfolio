@@ -70,11 +70,11 @@ export default function Home() {
         {/* Hero */}
         <section
           ref={heroRef}
-          className="relative h-screen flex items-center justify-center overflow-hidden bg-background"
+          className="relative h-screen flex items-center justify-center bg-background"
         >
           <motion.div
-            style={{ scale: heroScale, opacity: heroOpacity }}
-            className="absolute inset-0"
+            style={{ opacity: heroOpacity }}
+            className="absolute inset-0 overflow-hidden"
           >
             <ParticleField />
           </motion.div>
@@ -82,6 +82,15 @@ export default function Home() {
             <HeroText />
           </motion.div>
           <ScrollIndicator />
+
+          {/* Lamp glow bleeding into About section */}
+          <div
+            className="absolute bottom-0 left-0 right-0 translate-y-1/2 h-[200px] pointer-events-none z-[1]"
+            style={{
+              background:
+                "radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.04) 40%, transparent 70%)",
+            }}
+          />
         </section>
 
         {/* About */}

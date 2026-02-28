@@ -1,13 +1,15 @@
 "use client";
 
 import { useRef, useMemo, useEffect, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 function Icosahedron() {
   const meshRef = useRef<THREE.Group>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
   const targetRotation = useRef({ x: 0, y: 0 });
+  const scrollRef = useRef(0);
+  const smoothScale = useRef(1);
 
   const edgesGeometry = useMemo(() => {
     const ico = new THREE.IcosahedronGeometry(1.8, 1);
@@ -25,8 +27,19 @@ function Icosahedron() {
         y: -(e.clientY / window.innerHeight - 0.5) * 2,
       };
     }
+    function onScroll() {
+      const progress = Math.min(
+        window.scrollY / (window.innerHeight * 0.8),
+        1
+      );
+      scrollRef.current = progress;
+    }
     window.addEventListener("mousemove", onMouseMove);
-    return () => window.removeEventListener("mousemove", onMouseMove);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   useFrame((state) => {
@@ -34,13 +47,15 @@ function Icosahedron() {
 
     const t = state.clock.elapsedTime;
 
+    // Smooth scroll-based scale (lerp for buttery smooth)
+    const targetScale =
+      (1 - scrollRef.current * 0.3) * (1 + Math.sin(t * 0.5) * 0.05);
+    smoothScale.current += (targetScale - smoothScale.current) * 0.08;
+    meshRef.current.scale.setScalar(smoothScale.current);
+
     // Slow base rotation
     meshRef.current.rotation.y = t * 0.15;
     meshRef.current.rotation.x = Math.sin(t * 0.1) * 0.2;
-
-    // Breathing scale
-    const breathe = 1 + Math.sin(t * 0.5) * 0.05;
-    meshRef.current.scale.setScalar(breathe);
 
     // Mouse attraction (subtle)
     targetRotation.current.x = mouseRef.current.y * 0.3;
@@ -50,6 +65,9 @@ function Icosahedron() {
       (targetRotation.current.x - meshRef.current.rotation.x) * 0.02;
     meshRef.current.rotation.z +=
       (targetRotation.current.y * 0.5 - meshRef.current.rotation.z) * 0.02;
+
+    // Keep position centred (no drift)
+    meshRef.current.position.set(0, 0, 0);
   });
 
   return (
