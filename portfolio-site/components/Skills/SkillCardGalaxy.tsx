@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import { motion } from "motion/react";
 import CategoryTabs from "./CategoryTabs";
 import SkillCard from "./SkillCard";
 import { skillCategories, type Skill } from "@/lib/data";
@@ -16,9 +15,6 @@ export default function SkillCardGalaxy() {
   const [activeCategory, setActiveCategory] = useState("All");
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
-  const [magnetOffsets, setMagnetOffsets] = useState<
-    Record<number, { x: number; y: number }>
-  >({});
 
   // Flatten all skills with their category info
   const allSkills: FlatSkill[] = useMemo(() => {
@@ -37,17 +33,21 @@ export default function SkillCardGalaxy() {
     return flat;
   }, []);
 
-  // Magnetic cursor effect
-  const MAGNET_RADIUS = 150;
-  const MAGNET_STRENGTH = 5;
+  // Magnetic cursor effect — strong pull with quadratic falloff
+  const MAGNET_RADIUS = 280;
+  const MAGNET_STRENGTH = 18;
 
   const updateMagnets = useCallback(() => {
     if (!containerRef.current) return;
-    const container = containerRef.current;
-    const cards = container.querySelectorAll<HTMLElement>("[data-skill-card]");
-    const newOffsets: Record<number, { x: number; y: number }> = {};
+    const cards = containerRef.current.querySelectorAll<HTMLElement>("[data-skill-card]");
 
-    cards.forEach((card, i) => {
+    cards.forEach((card) => {
+      // Skip filtered-out cards
+      if (card.dataset.filtered === "true") {
+        card.style.translate = "0px 0px";
+        return;
+      }
+
       const rect = card.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
@@ -55,15 +55,14 @@ export default function SkillCardGalaxy() {
       const dy = mouseRef.current.y - cy;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < MAGNET_RADIUS && dist > 0) {
-        const force = (1 - dist / MAGNET_RADIUS) * MAGNET_STRENGTH;
-        newOffsets[i] = { x: dx * force * 0.05, y: dy * force * 0.05 };
+      if (dist < MAGNET_RADIUS && dist > 1) {
+        const t = 1 - dist / MAGNET_RADIUS;
+        const force = t * t * MAGNET_STRENGTH;
+        card.style.translate = `${(dx / dist) * force}px ${(dy / dist) * force}px`;
       } else {
-        newOffsets[i] = { x: 0, y: 0 };
+        card.style.translate = "0px 0px";
       }
     });
-
-    setMagnetOffsets(newOffsets);
   }, []);
 
   useEffect(() => {
@@ -120,13 +119,17 @@ export default function SkillCardGalaxy() {
             activeCategory !== "All" && skill.category !== activeCategory;
 
           return (
-            <div key={skill.name} data-skill-card>
+            <div
+              key={skill.name}
+              data-skill-card
+              data-filtered={isFiltered ? "true" : "false"}
+              style={{ transition: "translate 0.08s ease-out" }}
+            >
               <SkillCard
                 skill={skill}
                 colour={skill.colour}
                 index={skill.flatIndex}
                 isFiltered={isFiltered}
-                magnetOffset={magnetOffsets[i] ?? { x: 0, y: 0 }}
               />
             </div>
           );

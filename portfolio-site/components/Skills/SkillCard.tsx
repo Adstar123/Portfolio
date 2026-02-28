@@ -11,7 +11,6 @@ interface SkillCardProps {
   colour: string;
   index: number;
   isFiltered: boolean;
-  magnetOffset: { x: number; y: number };
 }
 
 export default function SkillCard({
@@ -19,7 +18,6 @@ export default function SkillCard({
   colour,
   index,
   isFiltered,
-  magnetOffset,
 }: SkillCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
@@ -81,17 +79,18 @@ export default function SkillCard({
       }}
       animate={{
         opacity: isFiltered ? 0.1 : 1,
-        scale: isFiltered ? 0.85 : 1,
-        x: isFiltered ? (seed - 0.5) * 40 : magnetOffset.x,
-        y: isFiltered ? yOffset * 3 : yOffset + magnetOffset.y,
-        rotate: isHovered ? 0 : rotation,
-        translateY: isHovered ? -8 : 0,
+        scale: isFiltered ? 0.9 : 1,
+        x: 0,
+        y: isFiltered ? 0 : yOffset,
+        rotate: isFiltered ? 0 : isHovered ? 0 : rotation,
+        translateY: isHovered && !isFiltered ? -8 : 0,
       }}
       style={{
         perspective: 1000,
         transformStyle: "preserve-3d",
         filter: isFiltered ? "grayscale(1)" : "grayscale(0)",
         transition: "filter 0.3s ease",
+        pointerEvents: isFiltered ? "none" : "auto",
       }}
       className="relative cursor-pointer select-none"
     >
@@ -101,11 +100,13 @@ export default function SkillCard({
           background: "rgba(20, 20, 20, 0.8)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          border: `1px solid ${isHovered ? `${colour}60` : "#262626"}`,
-          borderLeft: `2px solid ${isHovered ? colour : `${colour}30`}`,
-          boxShadow: isHovered
-            ? `0 0 20px ${colour}20, 0 0 40px ${colour}10, 0 8px 32px rgba(0,0,0,0.4)`
-            : "0 4px 16px rgba(0,0,0,0.2)",
+          border: `1px solid ${isFiltered ? "#1a1a1a" : isHovered ? `${colour}60` : "#262626"}`,
+          borderLeft: `2px solid ${isFiltered ? "#1a1a1a" : isHovered ? colour : `${colour}30`}`,
+          boxShadow: isFiltered
+            ? "none"
+            : isHovered
+              ? `0 0 20px ${colour}20, 0 0 40px ${colour}10, 0 8px 32px rgba(0,0,0,0.4)`
+              : "0 4px 16px rgba(0,0,0,0.2)",
           transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`,
           transition: "border-color 0.2s, border-left-color 0.2s, box-shadow 0.3s, transform 0.15s ease-out",
         }}
