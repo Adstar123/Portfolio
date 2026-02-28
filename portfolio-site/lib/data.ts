@@ -87,7 +87,7 @@ export const skillCategories: SkillCategory[] = [
     skills: [
       { name: "React", icon: "skill-icons:react-dark", iconType: "iconify" },
       { name: "Next.js", icon: "skill-icons:nextjs-dark", iconType: "iconify" },
-      { name: "Tailwind", icon: "skill-icons:tailwind-dark", iconType: "iconify" },
+      { name: "Tailwind", icon: "skill-icons:tailwindcss-dark", iconType: "iconify" },
       { name: "Electron", icon: "skill-icons:electron", iconType: "iconify" },
       { name: "Figma", icon: "skill-icons:figma-dark", iconType: "iconify" },
     ],

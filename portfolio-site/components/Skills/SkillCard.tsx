@@ -46,7 +46,7 @@ export default function SkillCard({
   // Get Lucide icon component dynamically
   const LucideIcon =
     skill.iconType === "lucide"
-      ? (LucideIcons as Record<string, React.ComponentType<{ size?: number; className?: string }>>)[
+      ? (LucideIcons as unknown as Record<string, React.ComponentType<{ size?: number; className?: string }>>)[
           skill.icon.charAt(0).toUpperCase() + skill.icon.slice(1)
         ] ?? LucideIcons.CircleDot
       : null;
@@ -76,11 +76,12 @@ export default function SkillCard({
         y: isFiltered ? yOffset * 3 : yOffset + magnetOffset.y,
         rotate: isHovered ? 0 : rotation,
         translateY: isHovered ? -8 : 0,
-        filter: isFiltered ? "grayscale(1)" : "grayscale(0)",
       }}
       style={{
         perspective: 1000,
         transformStyle: "preserve-3d",
+        filter: isFiltered ? "grayscale(1)" : "grayscale(0)",
+        transition: "filter 0.3s ease",
       }}
       className="relative cursor-pointer select-none"
     >

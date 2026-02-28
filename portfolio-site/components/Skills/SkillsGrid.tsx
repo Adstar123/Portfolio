@@ -31,7 +31,7 @@ export default function SkillsGrid() {
             {category.skills.map((skill, skillIndex) => {
               const LucideIcon =
                 skill.iconType === "lucide"
-                  ? (LucideIcons as Record<string, React.ComponentType<{ size?: number; className?: string }>>)[
+                  ? (LucideIcons as unknown as Record<string, React.ComponentType<{ size?: number; className?: string }>>)[
                       skill.icon.charAt(0).toUpperCase() + skill.icon.slice(1)
                     ] ?? LucideIcons.CircleDot
                   : null;
