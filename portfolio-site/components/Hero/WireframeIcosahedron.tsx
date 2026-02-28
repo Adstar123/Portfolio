@@ -57,14 +57,14 @@ function Icosahedron() {
     meshRef.current.rotation.y = t * 0.15;
     meshRef.current.rotation.x = Math.sin(t * 0.1) * 0.2;
 
-    // Mouse attraction (subtle)
-    targetRotation.current.x = mouseRef.current.y * 0.3;
-    targetRotation.current.y = mouseRef.current.x * 0.3;
+    // Mouse attraction (noticeable)
+    targetRotation.current.x = mouseRef.current.y * 0.8;
+    targetRotation.current.y = mouseRef.current.x * 0.8;
 
     meshRef.current.rotation.x +=
-      (targetRotation.current.x - meshRef.current.rotation.x) * 0.02;
+      (targetRotation.current.x - meshRef.current.rotation.x) * 0.06;
     meshRef.current.rotation.z +=
-      (targetRotation.current.y * 0.5 - meshRef.current.rotation.z) * 0.02;
+      (targetRotation.current.y * 0.7 - meshRef.current.rotation.z) * 0.06;
 
     // Keep position centred (no drift)
     meshRef.current.position.set(0, 0, 0);
