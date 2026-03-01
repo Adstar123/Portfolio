@@ -6,6 +6,8 @@ export interface Project {
   techStack: string[];
   github?: string;
   live?: string;
+  route?: string;
+  routeLabel?: string;
 }
 
 export interface Skill {
@@ -46,6 +48,8 @@ export const projects: Project[] = [
       "CI/CD",
     ],
     github: "https://github.com/Adstar123/OpenGTO",
+    route: "/projects/opengto",
+    routeLabel: "Try the Trainer",
   },
   {
     id: "ai-copilot",
@@ -65,6 +69,8 @@ export const projects: Project[] = [
       "LLM Integration",
     ],
     github: "https://github.com/mahit-c/Thesis-AI-Copilot",
+    route: "/projects/ai-copilot",
+    routeLabel: "View Project",
   },
 ];
 

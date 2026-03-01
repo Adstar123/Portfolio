@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { X, Github, ExternalLink } from "lucide-react";
+import { X, Github, ExternalLink, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import type { Project } from "@/lib/data";
 
 interface ProjectModalProps {
@@ -81,6 +82,17 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                   </span>
                 ))}
               </div>
+
+              {/* Explore Full Project Button */}
+              {project.route && (
+                <Link
+                  href={project.route}
+                  className="flex items-center justify-center gap-3 w-full py-4 mb-6 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-heading font-bold text-base hover:scale-[1.02] transition-all"
+                >
+                  {project.routeLabel || "Explore Full Project"}
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              )}
 
               {/* Links */}
               <div className="flex flex-wrap gap-4">
