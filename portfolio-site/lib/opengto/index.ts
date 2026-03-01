@@ -3,3 +3,4 @@ export * from "./card";
 export * from "./featureVector";
 export * from "./scenarioGenerator";
 export * from "./inference";
+export * from "./useGtoTrainer";
