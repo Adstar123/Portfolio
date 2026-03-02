@@ -142,8 +142,8 @@ export default function Home() {
               className="mb-16 text-center"
             >
               <motion.h2
-                initial={{ clipPath: "inset(0 100% 0 0)" }}
-                whileInView={{ clipPath: "inset(0 0% 0 0)" }}
+                initial={{ clipPath: "inset(-4px 100% -4px 0)" }}
+                whileInView={{ clipPath: "inset(-4px 0% -4px 0)" }}
                 viewport={{ once: true }}
                 transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className="font-heading text-4xl md:text-5xl font-bold text-text-primary"
@@ -186,8 +186,8 @@ export default function Home() {
               className="mb-16 text-center"
             >
               <motion.h2
-                initial={{ clipPath: "inset(0 100% 0 0)" }}
-                whileInView={{ clipPath: "inset(0 0% 0 0)" }}
+                initial={{ clipPath: "inset(-4px 100% -4px 0)" }}
+                whileInView={{ clipPath: "inset(-4px 0% -4px 0)" }}
                 viewport={{ once: true }}
                 transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className="font-heading text-4xl md:text-5xl font-bold text-text-primary"

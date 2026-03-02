@@ -6,30 +6,52 @@ let loading: Promise<ort.InferenceSession> | null = null;
 
 /**
  * Lazy-load the ONNX model. Returns cached session on subsequent calls.
+ * Guards against concurrent callers racing on the same promise.
  */
 export async function getSession(): Promise<ort.InferenceSession> {
   if (session) return session;
   if (loading) return loading;
 
-  loading = ort.InferenceSession.create("/models/opengto_model.onnx", {
-    executionProviders: ["wasm"],
-  });
+  loading = (async () => {
+    const sess = await ort.InferenceSession.create(
+      "/models/opengto_model.onnx",
+      { executionProviders: ["wasm"] }
+    );
+    session = sess;
+    loading = null;
+    return sess;
+  })();
 
-  session = await loading;
-  loading = null;
-  return session;
+  return loading;
 }
+
+/** Mutex to serialise inference calls (ONNX WASM backend is single-threaded). */
+let inferenceQueue: Promise<void> = Promise.resolve();
 
 /**
  * Run inference on a 317-dim feature vector.
  * Returns raw logits (6 values, one per action).
+ * Serialised through a queue because the WASM backend cannot handle
+ * concurrent .run() calls on the same session.
  */
 async function runInference(features: Float32Array): Promise<Float32Array> {
   const sess = await getSession();
   const tensor = new ort.Tensor("float32", features, [1, 317]);
-  const results = await sess.run({ features: tensor });
-  const outputName = sess.outputNames[0];
-  return results[outputName].data as Float32Array;
+
+  // Queue this inference behind any in-flight call
+  const result = new Promise<Float32Array>((resolve, reject) => {
+    inferenceQueue = inferenceQueue.then(async () => {
+      try {
+        const results = await sess.run({ features: tensor });
+        const outputName = sess.outputNames[0];
+        resolve(results[outputName].data as Float32Array);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  });
+
+  return result;
 }
 
 /**

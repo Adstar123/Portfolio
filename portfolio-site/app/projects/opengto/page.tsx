@@ -22,7 +22,9 @@ import type {
 // ─── Tech badges ─────────────────────────────────────────────────────────────
 
 const TECH_STACK = [
+  { label: "Python", colour: "#3776ab" },
   { label: "PyTorch", colour: "#ee4c2c" },
+  { label: "Flask", colour: "#ffffff" },
   { label: "React", colour: "#61dafb" },
   { label: "TypeScript", colour: "#3178c6" },
   { label: "ONNX", colour: "#005CED" },
@@ -179,21 +181,22 @@ export default function OpenGTOPage() {
   return (
     <div className="min-h-screen">
       {/* ── Hero Section ──────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden px-6 pt-12 pb-10">
-        {/* Background gradient effects */}
-        <div className="absolute inset-0 pointer-events-none">
+      <section className="relative px-6 pt-12 pb-10">
+        {/* Background gradient effects — fades out smoothly via mask */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            maskImage:
+              "linear-gradient(to bottom, black 0%, black 40%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, black 0%, black 40%, transparent 100%)",
+          }}
+        >
           <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px]"
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px]"
             style={{
               background:
                 "radial-gradient(ellipse at center, rgba(245,158,11,0.08) 0%, rgba(217,119,6,0.04) 40%, transparent 70%)",
-            }}
-          />
-          <div
-            className="absolute top-20 right-[20%] w-[300px] h-[300px] rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(249,115,22,0.06) 0%, transparent 70%)",
             }}
           />
         </div>
@@ -269,7 +272,7 @@ export default function OpenGTOPage() {
             transition={{ delay: 0.25, type: "spring", stiffness: 200, damping: 25 }}
           >
             <a
-              href="#"
+              href="https://github.com/Adstar123/OpenGTO"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-zinc-300 bg-zinc-800/80 border border-white/10 hover:border-white/20 hover:text-white transition-colors"

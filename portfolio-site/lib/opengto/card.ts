@@ -26,20 +26,25 @@ export function getHandType(card1: Card, card2: Card): string {
 }
 
 /**
- * Get index (0-168) for a hand type in the 13x13 matrix.
- * Diagonal = pairs, upper triangle = suited, lower triangle = offsuit.
- * Matches Python: card.py hand_type_to_index()
+ * Get feature-vector index (0-168) for a hand type.
+ * MUST match Python HoleCards.hand_type_index() used during training:
+ *   high_idx = rank.value - 2   (2=0, 3=1, ..., A=12)
+ *   pair:    high_idx * 13 + high_idx
+ *   suited:  high_idx * 13 + low_idx
+ *   offsuit: low_idx  * 13 + high_idx
  */
 export function handTypeToIndex(handType: string): number {
-  const ranks = "AKQJT98765432";
+  const ri = (r: string) => rankValue(r) - 2; // 2→0, A→12
+
   if (handType.length === 2) {
-    const idx = ranks.indexOf(handType[0]);
+    // Pair
+    const idx = ri(handType[0]);
     return idx * 13 + idx;
   }
-  const r1 = ranks.indexOf(handType[0]);
-  const r2 = ranks.indexOf(handType[1]);
-  if (handType[2] === "s") return Math.min(r1, r2) * 13 + Math.max(r1, r2);
-  return Math.max(r1, r2) * 13 + Math.min(r1, r2);
+  const high = Math.max(ri(handType[0]), ri(handType[1]));
+  const low = Math.min(ri(handType[0]), ri(handType[1]));
+  if (handType[2] === "s") return high * 13 + low;
+  return low * 13 + high;
 }
 
 /** Convert index (0-168) back to hand type string */
