@@ -2,8 +2,8 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { User } from "lucide-react";
-import type { Position, PlayerAction } from "@/lib/opengto/types";
+import { CircleUser } from "lucide-react";
+import type { Position, PlayerAction, UIActionType } from "@/lib/opengto/types";
 
 interface PlayerSeatProps {
   position: Position;
@@ -15,20 +15,36 @@ interface PlayerSeatProps {
   delay: number;
 }
 
-const ACTION_COLORS: Record<string, string> = {
-  fold: "#ff453a",
-  check: "#32d74b",
-  call: "#0a84ff",
-  raise: "#ff9f0a",
-  "all-in": "#ff375f",
-};
-
-const ACTION_LABELS: Record<string, string> = {
-  fold: "Fold",
-  check: "Check",
-  call: "Call",
-  raise: "Raise",
-  "all-in": "All-In",
+const ACTION_STYLES: Record<
+  UIActionType,
+  { bg: string; border?: string; text: string; label: string }
+> = {
+  fold: {
+    bg: "bg-red-600",
+    text: "text-white",
+    label: "FOLD",
+  },
+  check: {
+    bg: "bg-emerald-600",
+    text: "text-white",
+    label: "CHECK",
+  },
+  call: {
+    bg: "bg-blue-600",
+    text: "text-white",
+    label: "CALL",
+  },
+  raise: {
+    bg: "bg-transparent",
+    border: "border border-amber-500/70",
+    text: "text-amber-400",
+    label: "RAISE",
+  },
+  "all-in": {
+    bg: "bg-rose-600",
+    text: "text-white",
+    label: "ALL-IN",
+  },
 };
 
 const PlayerSeat: React.FC<PlayerSeatProps> = ({
@@ -40,8 +56,8 @@ const PlayerSeat: React.FC<PlayerSeatProps> = ({
   offsetY,
   delay,
 }) => {
-  const actionColor = action ? ACTION_COLORS[action.action] : undefined;
   const isFolded = action?.action === "fold";
+  const style = action ? ACTION_STYLES[action.action] : undefined;
 
   return (
     <div
@@ -52,9 +68,9 @@ const PlayerSeat: React.FC<PlayerSeatProps> = ({
       }}
     >
       <motion.div
-        className={`flex flex-col items-center gap-1 ${isFolded ? "opacity-40" : ""}`}
+        className="flex flex-col items-center gap-1.5"
         initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: isFolded ? 0.4 : 1, scale: 1 }}
+        animate={{ opacity: isFolded && isRevealed ? 0.4 : 1, scale: 1 }}
         transition={{
           type: "spring",
           stiffness: 200,
@@ -62,75 +78,78 @@ const PlayerSeat: React.FC<PlayerSeatProps> = ({
           delay: delay,
         }}
       >
-        <div className="flex flex-col items-center gap-1">
-          {/* Position badge */}
-          <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${
-              isHero
-                ? "bg-[rgba(30,25,20,0.9)] border-amber-700/50"
-                : "bg-black/75 border-white/10"
+        {/* Position badge */}
+        <div
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${
+            isHero
+              ? "bg-zinc-800/90 ring-1 ring-amber-500/40"
+              : "bg-zinc-800/90 ring-1 ring-white/[0.06]"
+          }`}
+        >
+          <CircleUser
+            size={13}
+            strokeWidth={1.8}
+            className={isHero ? "text-amber-500/80" : "text-zinc-500"}
+          />
+          <span
+            className={`text-[11px] font-semibold tracking-wide ${
+              isHero ? "text-amber-300" : "text-zinc-300"
             }`}
           >
-            <User
-              size={14}
-              className={isHero ? "text-amber-500" : "text-zinc-500"}
-            />
-            <span className="text-xs font-semibold text-white tracking-wide">
-              {position}
-            </span>
-          </div>
+            {position}
+          </span>
+        </div>
 
-          {/* Action display */}
-          <AnimatePresence mode="wait">
-            {isRevealed && action && (
-              <motion.div
-                className="flex flex-col items-center px-3 py-1.5 bg-black/85 rounded-lg min-w-[55px]"
-                initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.95 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 400,
-                  damping: 25,
-                }}
-                style={{
-                  borderWidth: "1px",
-                  borderStyle: "solid",
-                  borderColor: actionColor,
-                }}
-              >
-                <span
-                  className="text-[10px] font-bold tracking-wider uppercase"
-                  style={{ color: actionColor }}
-                >
-                  {ACTION_LABELS[action.action]}
-                </span>
-                {action.amount != null && action.action !== "fold" && (
-                  <span className="text-[11px] font-bold text-white font-mono">
-                    {action.amount.toFixed(1)}bb
-                  </span>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Hero indicator */}
-          {isHero && (
+        {/* Action badge */}
+        <AnimatePresence mode="wait">
+          {isRevealed && action && style && (
             <motion.div
-              className="px-2.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg text-[9px] font-bold text-zinc-900 tracking-widest"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+              className={`flex flex-col items-center px-3 py-1 rounded-full min-w-[52px] ${style.bg} ${style.border ?? ""}`}
+              initial={{ opacity: 0, y: 5, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -5, scale: 0.9 }}
               transition={{
                 type: "spring",
                 stiffness: 400,
-                damping: 15,
-                delay: delay + 0.15,
+                damping: 25,
               }}
             >
-              YOU
+              <span
+                className={`text-[10px] font-bold tracking-wider uppercase leading-tight ${style.text}`}
+              >
+                {style.label}
+              </span>
+              {action.amount != null && action.action !== "fold" && (
+                <span
+                  className={`text-[10px] font-semibold font-mono tabular-nums leading-tight ${
+                    action.action === "raise"
+                      ? "text-amber-300/90"
+                      : "text-white/90"
+                  }`}
+                >
+                  {action.amount.toFixed(1)}bb
+                </span>
+              )}
             </motion.div>
           )}
-        </div>
+        </AnimatePresence>
+
+        {/* Hero "YOU" badge */}
+        {isHero && (
+          <motion.div
+            className="px-2.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-[9px] font-bold text-zinc-900 tracking-widest uppercase"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 15,
+              delay: delay + 0.15,
+            }}
+          >
+            YOU
+          </motion.div>
+        )}
       </motion.div>
     </div>
   );

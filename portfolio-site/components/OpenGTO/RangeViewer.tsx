@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { RefreshCw, Loader2, BarChart3, Hand } from "lucide-react";
+import { Loader2, BarChart3, Hand } from "lucide-react";
 import RangeMatrix from "./RangeMatrix";
 import { getRangeStrategy } from "@/lib/opengto/useGtoTrainer";
 import { ActionType } from "@/lib/opengto/types";
@@ -46,13 +46,20 @@ const ACTION_COLORS: Record<string, string> = {
 const TABLE_POSITIONS: Record<Position, { x: number; y: number }> = {
   UTG: { x: 15, y: 65 },
   HJ: { x: 15, y: 35 },
-  CO: { x: 50, y: 15 },
+  CO: { x: 50, y: 12 },
   BTN: { x: 85, y: 35 },
   SB: { x: 85, y: 65 },
-  BB: { x: 50, y: 85 },
+  BB: { x: 50, y: 88 },
 };
 
 const OPPONENT_ACTIONS: OpponentAction[] = ["fold", "call", "raise", "all-in"];
+
+const OPPONENT_ACTION_LABELS: Record<OpponentAction, string> = {
+  fold: "F",
+  call: "C",
+  raise: "R",
+  "all-in": "A",
+};
 
 const OPPONENT_ACTION_COLOURS: Record<OpponentAction, string> = {
   fold: "#6b7280",
@@ -88,6 +95,17 @@ function computeDistribution(rangeData: RangeData): ActionDistribution {
   return dist;
 }
 
+function computePot(positionConfigs: PositionConfig[]): string {
+  // SB = 0.5, BB = 1.0 base
+  let pot = 1.5;
+  for (const pc of positionConfigs) {
+    if (pc.action === "call") pot += 1.0;
+    else if (pc.action === "raise") pot += 2.5;
+    else if (pc.action === "all-in") pot += 100;
+  }
+  return pot.toFixed(1);
+}
+
 // ─── Mini Table Component ───────────────────────────────────────────────────
 
 function MiniTable({
@@ -103,16 +121,31 @@ function MiniTable({
     return map;
   }, [positionConfigs]);
 
+  const pot = computePot(positionConfigs);
+
   return (
-    <div className="relative w-full aspect-[4/3] bg-emerald-900/40 rounded-xl border border-emerald-800/30 overflow-hidden">
+    <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-zinc-950/60">
       {/* Felt ellipse */}
       <div
-        className="absolute inset-[15%] rounded-[50%] border-2 border-emerald-700/50"
+        className="absolute inset-[12%] rounded-[50%]"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(34,197,94,0.1), transparent)",
+            "radial-gradient(ellipse at center, rgba(34,197,94,0.15), rgba(22,163,74,0.06))",
+          border: "1.5px solid rgba(34,197,94,0.25)",
         }}
       />
+
+      {/* Pot label in centre */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <span className="text-[9px] font-semibold uppercase tracking-widest text-emerald-500/70">
+            Pot
+          </span>
+          <span className="text-sm font-bold text-emerald-400">
+            {pot} BB
+          </span>
+        </div>
+      </div>
 
       {/* Position markers */}
       {POSITIONS.map((pos) => {
@@ -121,6 +154,20 @@ function MiniTable({
         const action = configMap[pos];
         const colour = POSITION_COLOURS[pos];
 
+        // Determine marker label
+        const marker: string = isHero ? "?" : pos;
+
+        // Determine action indicator
+        let actionLabel: string | null = null;
+        if (!isHero && action) {
+          if (action === "fold") actionLabel = "F";
+          else if (action === "call") actionLabel = "C";
+          else if (action === "raise") actionLabel = "R";
+          else if (action === "all-in") actionLabel = "A";
+        }
+
+        const isFolded = !isHero && action === "fold";
+
         return (
           <div
             key={pos}
@@ -128,25 +175,37 @@ function MiniTable({
             style={{ left: `${x}%`, top: `${y}%` }}
           >
             <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-all"
               style={{
-                background: isHero ? colour : `${colour}44`,
-                color: isHero ? "#000" : colour,
-                border: isHero ? `2px solid ${colour}` : `1px solid ${colour}66`,
-                boxShadow: isHero ? `0 0 8px ${colour}66` : "none",
+                background: isHero
+                  ? colour
+                  : isFolded
+                    ? "rgba(107,114,128,0.2)"
+                    : `${colour}33`,
+                color: isHero
+                  ? "#000"
+                  : isFolded
+                    ? "#6b7280"
+                    : colour,
+                border: isHero
+                  ? `2px solid ${colour}`
+                  : isFolded
+                    ? "1px solid rgba(107,114,128,0.3)"
+                    : `1.5px solid ${colour}88`,
+                boxShadow: isHero ? `0 0 10px ${colour}55` : "none",
+                opacity: isFolded ? 0.5 : 1,
               }}
             >
-              {pos}
+              {marker}
             </div>
-            {action && !isHero && (
+            {actionLabel && (
               <span
-                className="text-[8px] font-semibold uppercase px-1 rounded"
+                className="text-[8px] font-bold uppercase leading-none"
                 style={{
-                  color: OPPONENT_ACTION_COLOURS[action],
-                  background: "rgba(0,0,0,0.4)",
+                  color: OPPONENT_ACTION_COLOURS[action!],
                 }}
               >
-                {action === "all-in" ? "AI" : action[0].toUpperCase()}
+                {actionLabel}
               </span>
             )}
           </div>
@@ -167,31 +226,32 @@ function StrategyBars({ strategy }: { strategy: GTOStrategy }) {
     { label: "All-In", key: "allIn", colour: ACTION_COLORS.allIn },
   ];
 
-  // Filter only non-zero actions
-  const visible = items.filter((item) => strategy[item.key] > 0.005);
+  // Filter only non-zero actions and sort descending
+  const visible = items
+    .filter((item) => strategy[item.key] > 0.005)
+    .sort((a, b) => strategy[b.key] - strategy[a.key]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       {visible.map(({ label, key, colour }) => {
         const pct = strategy[key] * 100;
         return (
-          <div key={key} className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-zinc-400">{label}</span>
-              <span className="font-mono text-zinc-300">
-                {pct.toFixed(1)}%
-              </span>
-            </div>
-            <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full rounded-full"
-                style={{ background: colour }}
-                initial={{ width: 0 }}
-                animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-              />
-            </div>
-          </div>
+          <motion.div
+            key={key}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.25 }}
+            className="flex items-center py-1.5 px-2 rounded-md"
+            style={{ borderLeft: `3px solid ${colour}` }}
+          >
+            <span className="text-xs text-zinc-300 flex-1">{label}</span>
+            <span
+              className="text-xs font-mono font-semibold"
+              style={{ color: colour }}
+            >
+              {pct.toFixed(1)}%
+            </span>
+          </motion.div>
         );
       })}
     </div>
@@ -209,30 +269,32 @@ function DistributionStats({ dist }: { dist: ActionDistribution }) {
     { label: "All-In", key: "allIn", colour: ACTION_COLORS.allIn },
   ];
 
-  const visible = items.filter((item) => dist[item.key] > 0.5);
+  // Filter >0.5% and sort descending
+  const visible = items
+    .filter((item) => dist[item.key] > 0.5)
+    .sort((a, b) => dist[b.key] - dist[a.key]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       {visible.map(({ label, key, colour }) => {
         const pct = dist[key];
         return (
-          <div key={key} className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-zinc-400">{label}</span>
-              <span className="font-mono text-zinc-300">
-                {pct.toFixed(1)}%
-              </span>
-            </div>
-            <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full rounded-full"
-                style={{ background: colour }}
-                initial={{ width: 0 }}
-                animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-              />
-            </div>
-          </div>
+          <motion.div
+            key={key}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.25 }}
+            className="flex items-center py-1.5 px-2 rounded-md"
+            style={{ borderLeft: `3px solid ${colour}` }}
+          >
+            <span className="text-xs text-zinc-300 flex-1">{label}</span>
+            <span
+              className="text-xs font-mono font-semibold"
+              style={{ color: colour }}
+            >
+              {pct.toFixed(1)}%
+            </span>
+          </motion.div>
         );
       })}
     </div>
@@ -332,81 +394,84 @@ export default function RangeViewer() {
   return (
     <div className="flex flex-col gap-4 w-full">
       {/* ── Top Action Bar ─────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-3 p-3 bg-zinc-900/60 backdrop-blur-sm rounded-xl border border-zinc-800/50">
+      <div className="flex flex-wrap items-end gap-4 p-3 bg-zinc-900/60 backdrop-blur-sm rounded-xl border border-zinc-800/50">
         {/* Hero position selector */}
-        <div className="flex items-center gap-1">
-          <span className="text-xs text-zinc-500 mr-1 font-medium">Hero:</span>
-          {POSITIONS.map((pos) => (
-            <button
-              key={pos}
-              onClick={() => setHeroPosition(pos)}
-              className="px-2.5 py-1 text-xs font-bold rounded-md transition-all"
-              style={{
-                background:
-                  heroPosition === pos
-                    ? POSITION_COLOURS[pos]
-                    : "rgba(255,255,255,0.05)",
-                color: heroPosition === pos ? "#000" : POSITION_COLOURS[pos],
-                border:
-                  heroPosition === pos
-                    ? `1px solid ${POSITION_COLOURS[pos]}`
-                    : "1px solid transparent",
-              }}
-            >
-              {pos}
-            </button>
-          ))}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+            Your Position
+          </span>
+          <div className="flex items-center gap-1">
+            {POSITIONS.map((pos) => {
+              const isSelected = heroPosition === pos;
+              return (
+                <button
+                  key={pos}
+                  onClick={() => setHeroPosition(pos)}
+                  className="px-2.5 py-1 text-xs font-bold rounded-md transition-all"
+                  style={{
+                    background: isSelected
+                      ? POSITION_COLOURS[pos]
+                      : "transparent",
+                    color: isSelected ? "#000" : POSITION_COLOURS[pos],
+                    border: `1.5px solid ${isSelected ? POSITION_COLOURS[pos] : `${POSITION_COLOURS[pos]}55`}`,
+                  }}
+                >
+                  {pos}
+                </button>
+              );
+            })}
+          </div>
         </div>
-
-        {/* Divider */}
-        <div className="w-px h-6 bg-zinc-700" />
 
         {/* Opponent action configurator */}
         {positionConfigs.length > 0 && (
-          <div className="flex items-center gap-3 flex-wrap">
-            {positionConfigs.map((pc) => (
-              <div key={pc.position} className="flex items-center gap-1">
-                <span
-                  className="text-xs font-bold mr-0.5"
-                  style={{ color: POSITION_COLOURS[pc.position] }}
-                >
-                  {pc.position}:
-                </span>
-                {OPPONENT_ACTIONS.map((action) => (
-                  <button
-                    key={action}
-                    onClick={() => setPositionAction(pc.position, action)}
-                    className="px-1.5 py-0.5 text-[10px] font-semibold rounded transition-all uppercase"
-                    style={{
-                      background:
-                        pc.action === action
-                          ? OPPONENT_ACTION_COLOURS[action]
-                          : "rgba(255,255,255,0.05)",
-                      color:
-                        pc.action === action
-                          ? "#fff"
-                          : "rgba(255,255,255,0.4)",
-                    }}
-                  >
-                    {action === "all-in" ? "AI" : action[0]}
-                  </button>
+          <>
+            {/* Divider */}
+            <div className="w-px h-10 bg-zinc-700/60 self-center" />
+
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+                Opponent Actions
+              </span>
+              <div className="flex items-center gap-3">
+                {positionConfigs.map((pc) => (
+                  <div key={pc.position} className="flex items-center gap-1">
+                    <span
+                      className="text-xs font-bold mr-0.5"
+                      style={{ color: POSITION_COLOURS[pc.position] }}
+                    >
+                      {pc.position}:
+                    </span>
+                    {OPPONENT_ACTIONS.map((action) => {
+                      const isActive = pc.action === action;
+                      return (
+                        <button
+                          key={action}
+                          onClick={() => setPositionAction(pc.position, action)}
+                          className="w-6 h-6 text-[10px] font-bold rounded transition-all flex items-center justify-center"
+                          style={{
+                            background: isActive
+                              ? OPPONENT_ACTION_COLOURS[action]
+                              : "transparent",
+                            color: isActive
+                              ? "#fff"
+                              : "rgba(255,255,255,0.35)",
+                            border: isActive
+                              ? `1.5px solid ${OPPONENT_ACTION_COLOURS[action]}`
+                              : "1.5px solid rgba(255,255,255,0.1)",
+                          }}
+                        >
+                          {OPPONENT_ACTION_LABELS[action]}
+                        </button>
+                      );
+                    })}
+                  </div>
                 ))}
               </div>
-            ))}
-          </div>
+            </div>
+          </>
         )}
 
-        {/* Refresh button */}
-        <button
-          onClick={computeRange}
-          disabled={isLoading}
-          className="ml-auto p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw
-            size={14}
-            className={isLoading ? "animate-spin" : ""}
-          />
-        </button>
       </div>
 
       {/* ── Main Area ──────────────────────────────────────────────────── */}
@@ -431,7 +496,7 @@ export default function RangeViewer() {
         </div>
 
         {/* Right: Side Panel */}
-        <div className="w-80 shrink-0 flex flex-col gap-3">
+        <div className="w-72 shrink-0 flex flex-col gap-3">
           {/* Tab switcher */}
           <div className="flex bg-zinc-900/60 rounded-lg p-0.5 border border-zinc-800/50">
             <button
@@ -443,7 +508,7 @@ export default function RangeViewer() {
               }`}
             >
               <BarChart3 size={12} />
-              Overview
+              Table View
             </button>
             <button
               onClick={() => setSideView("detail")}
@@ -459,7 +524,7 @@ export default function RangeViewer() {
           </div>
 
           {/* Panel content */}
-          <div className="flex-1 bg-zinc-900/60 rounded-xl border border-zinc-800/50 p-4">
+          <div className="flex-1 bg-zinc-900/60 rounded-xl border border-zinc-800/50 p-4 overflow-hidden">
             <AnimatePresence mode="wait">
               {sideView === "overview" ? (
                 <motion.div
@@ -470,6 +535,14 @@ export default function RangeViewer() {
                   transition={{ duration: 0.2 }}
                   className="flex flex-col gap-4"
                 >
+                  {/* Table View header */}
+                  <div className="flex items-center gap-1.5">
+                    <BarChart3 size={13} className="text-zinc-500" />
+                    <h3 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">
+                      Table View
+                    </h3>
+                  </div>
+
                   {/* Mini table */}
                   <MiniTable
                     heroPosition={heroPosition}
@@ -478,7 +551,7 @@ export default function RangeViewer() {
 
                   {/* Distribution stats */}
                   <div>
-                    <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">
+                    <h3 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest mb-2">
                       Action Distribution
                     </h3>
                     <DistributionStats dist={distribution} />
@@ -499,7 +572,7 @@ export default function RangeViewer() {
                         <span className="text-xl font-bold text-white">
                           {selectedHand}
                         </span>
-                        <span className="text-xs text-zinc-500">
+                        <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium">
                           {selectedHand.length === 2
                             ? "Pair"
                             : selectedHand.endsWith("s")
@@ -507,7 +580,13 @@ export default function RangeViewer() {
                               : "Offsuit"}
                         </span>
                       </div>
-                      <StrategyBars strategy={selectedStrategy} />
+
+                      <div>
+                        <h3 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest mb-2">
+                          Strategy Breakdown
+                        </h3>
+                        <StrategyBars strategy={selectedStrategy} />
+                      </div>
                     </>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-8 text-zinc-600">

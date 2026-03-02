@@ -14,13 +14,14 @@ interface PokerTableProps {
 
 // Visual positions around the table (percentage offsets from centre)
 // Index 0 = hero (bottom centre), then clockwise
+// Adjusted for larger table with wider spacing
 const VISUAL_POSITIONS = [
-  { x: 0, y: 55 }, // 0 — Hero (bottom centre)
-  { x: -38, y: 30 }, // 1 — Bottom-left
-  { x: -42, y: -8 }, // 2 — Left
-  { x: -28, y: -42 }, // 3 — Top-left
-  { x: 28, y: -42 }, // 4 — Top-right
-  { x: 42, y: -8 }, // 5 — Right
+  { x: 0, y: 52 }, // 0 — Hero (bottom centre)
+  { x: -44, y: 28 }, // 1 — Bottom-left
+  { x: -48, y: -10 }, // 2 — Left
+  { x: -30, y: -44 }, // 3 — Top-left
+  { x: 30, y: -44 }, // 4 — Top-right
+  { x: 48, y: -10 }, // 5 — Right
 ];
 
 const ACTION_REVEAL_DELAY = 350; // ms between each villain reveal
@@ -96,16 +97,16 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
 
   if (!scenario) {
     return (
-      <div className="relative w-full max-w-[600px] mx-auto aspect-[550/340]">
+      <div className="relative w-full max-w-[800px] mx-auto aspect-[5/3]">
         {/* Empty table state */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className="w-full h-full rounded-[50%] border-2 border-white/5"
+            className="w-[88%] h-[78%] rounded-[50%] border-2 border-white/5"
             style={{
               background:
                 "linear-gradient(145deg, #1a5c3a 0%, #0f4028 50%, #0a3020 100%)",
               boxShadow:
-                "0 0 0 10px #3d2a1f, 0 0 0 14px #261810, 0 0 0 16px rgba(0,0,0,0.4), 0 20px 60px rgba(0,0,0,0.5), inset 0 0 60px rgba(0,0,0,0.3)",
+                "0 0 0 14px #4a3528, 0 0 0 18px #3d2a1f, 0 0 0 22px #261810, 0 0 0 24px rgba(0,0,0,0.5), 0 24px 80px rgba(0,0,0,0.6), inset 0 0 80px rgba(0,0,0,0.3)",
             }}
           />
         </div>
@@ -119,27 +120,27 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
   );
 
   return (
-    <div className="relative w-full max-w-[600px] mx-auto">
+    <div className="relative w-full max-w-[800px] mx-auto mb-12">
       {/* Ambient green glow background */}
       <div
-        className="absolute -inset-8 rounded-[50%] pointer-events-none"
+        className="absolute -inset-12 rounded-[50%] pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(26,92,58,0.15) 0%, rgba(15,64,40,0.08) 40%, transparent 70%)",
+            "radial-gradient(ellipse at center, rgba(26,92,58,0.18) 0%, rgba(15,64,40,0.1) 40%, transparent 70%)",
         }}
       />
 
-      {/* Table container — maintains aspect ratio */}
-      <div className="relative w-full aspect-[550/340]">
+      {/* Table container — wider aspect ratio for more room */}
+      <div className="relative w-full aspect-[5/3]">
         {/* Oval table felt */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className="w-[92%] h-[85%] rounded-[50%] relative overflow-hidden"
+            className="w-[88%] h-[78%] rounded-[50%] relative overflow-hidden"
             style={{
               background:
                 "linear-gradient(145deg, #1a5c3a 0%, #0f4028 50%, #0a3020 100%)",
               boxShadow:
-                "0 0 0 10px #3d2a1f, 0 0 0 14px #261810, 0 0 0 16px rgba(0,0,0,0.4), 0 20px 60px rgba(0,0,0,0.5), inset 0 0 60px rgba(0,0,0,0.3)",
+                "0 0 0 14px #4a3528, 0 0 0 18px #3d2a1f, 0 0 0 22px #261810, 0 0 0 24px rgba(0,0,0,0.5), 0 24px 80px rgba(0,0,0,0.6), inset 0 0 80px rgba(0,0,0,0.3)",
             }}
           >
             {/* SVG noise texture overlay for felt effect */}
@@ -165,27 +166,28 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
         </div>
 
         {/* Pot display — centred on table */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+        <div className="absolute top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
           <AnimatePresence mode="wait">
             <motion.div
               key={scenario.pot}
-              className="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl bg-black/70 backdrop-blur-sm"
+              className="flex flex-col items-center gap-1 px-6 py-3 rounded-xl bg-black/80 backdrop-blur-sm"
               style={{
-                borderWidth: "1px",
+                borderWidth: "1.5px",
                 borderStyle: "solid",
-                borderColor: "rgba(217, 163, 65, 0.4)",
-                boxShadow: "0 0 20px rgba(217, 163, 65, 0.08)",
+                borderColor: "rgba(217, 163, 65, 0.5)",
+                boxShadow:
+                  "0 0 24px rgba(217, 163, 65, 0.12), 0 0 8px rgba(217, 163, 65, 0.06), 0 4px 20px rgba(0,0,0,0.4)",
               }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
             >
-              <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider">
-                Pot
+              <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.15em]">
+                POT
               </span>
-              <span className="text-lg font-bold text-amber-400 font-mono tabular-nums">
-                {scenario.pot.toFixed(1)}bb
+              <span className="text-2xl font-bold text-amber-400 font-mono tabular-nums leading-none">
+                {scenario.pot.toFixed(1)} BB
               </span>
             </motion.div>
           </AnimatePresence>
@@ -213,9 +215,9 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
           );
         })}
 
-        {/* Hero cards — bottom of table */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-1.5">
-          <div className="flex gap-1.5">
+        {/* Hero cards — overlapping the bottom of the felt */}
+        <div className="absolute bottom-[2%] left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
+          <div className="flex gap-2">
             <PlayingCard
               card={scenario.heroCards.card1}
               index={0}
@@ -230,7 +232,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
 
           {/* Hand type badge */}
           <motion.div
-            className="px-2.5 py-0.5 rounded-full bg-black/80 border border-white/10"
+            className="px-3 py-1 rounded-full bg-black/85 border border-white/10"
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
@@ -240,7 +242,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
               delay: 0.3,
             }}
           >
-            <span className="text-[11px] font-semibold text-zinc-300 font-mono tracking-wide">
+            <span className="text-xs font-semibold text-zinc-300 font-mono tracking-wide">
               {scenario.heroCards.handType}
             </span>
           </motion.div>

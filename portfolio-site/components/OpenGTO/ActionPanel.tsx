@@ -2,7 +2,7 @@
 
 import React, { useEffect, useCallback } from "react";
 import { motion } from "motion/react";
-import { X, Check, Coins, TrendingUp, Zap } from "lucide-react";
+import { DoorOpen, Check, Coins, TrendingUp, Zap } from "lucide-react";
 import type { Scenario, UIActionType } from "@/lib/opengto/types";
 
 interface ActionPanelProps {
@@ -17,43 +17,49 @@ interface ActionButton {
   icon: React.ReactNode;
   colour: string;
   shortcut: string;
+  shortcutLabel: string;
 }
 
 const ACTION_BUTTONS: ActionButton[] = [
   {
     action: "fold",
     label: "Fold",
-    icon: <X size={20} />,
+    icon: <DoorOpen size={24} strokeWidth={1.8} />,
     colour: "#ff453a",
     shortcut: "F",
+    shortcutLabel: "Fold",
   },
   {
     action: "check",
     label: "Check",
-    icon: <Check size={20} />,
+    icon: <Check size={24} strokeWidth={2.2} />,
     colour: "#32d74b",
     shortcut: "X",
+    shortcutLabel: "Check",
   },
   {
     action: "call",
     label: "Call",
-    icon: <Coins size={20} />,
+    icon: <Coins size={24} strokeWidth={1.8} />,
     colour: "#0a84ff",
     shortcut: "C",
+    shortcutLabel: "Call",
   },
   {
     action: "raise",
     label: "Raise",
-    icon: <TrendingUp size={20} />,
+    icon: <TrendingUp size={24} strokeWidth={2} />,
     colour: "#ff9f0a",
     shortcut: "R",
+    shortcutLabel: "Raise",
   },
   {
     action: "all-in",
     label: "All-In",
-    icon: <Zap size={20} />,
+    icon: <Zap size={24} strokeWidth={2} />,
     colour: "#ff375f",
     shortcut: "A",
+    shortcutLabel: "All-In",
   },
 ];
 
@@ -105,24 +111,29 @@ const ActionPanel: React.FC<ActionPanelProps> = ({
   const callAmount = scenario ? scenario.currentBet : 0;
 
   return (
-    <div className="w-full rounded-2xl bg-zinc-900/80 border border-white/[0.06] p-4 backdrop-blur-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-zinc-200 tracking-wide">
+    <motion.div
+      className="w-full rounded-2xl bg-zinc-900/80 border border-white/[0.06] p-4 backdrop-blur-sm"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 260, damping: 24 }}
+    >
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-bold text-zinc-100 tracking-wide">
           Your Action
         </h3>
         {callAmount > 0 && (
-          <span className="text-xs font-mono text-zinc-400">
-            To Call:{" "}
-            <span className="text-amber-400 font-semibold">
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-800/80 border border-white/[0.06] px-2.5 py-1 text-xs font-mono text-zinc-400">
+            To Call:
+            <span className="text-amber-400 font-bold">
               {callAmount.toFixed(1)} BB
             </span>
           </span>
         )}
       </div>
 
-      {/* Action buttons grid */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+      {/* Action buttons — single row, 5 equal-width cards */}
+      <div className="grid grid-cols-5 gap-2">
         {ACTION_BUTTONS.map((btn, index) => {
           const legal = isLegal(btn.action);
           const isDisabled = disabled || !scenario || !legal;
@@ -135,31 +146,38 @@ const ActionPanel: React.FC<ActionPanelProps> = ({
               onClick={() => {
                 if (!isDisabled) onAction(btn.action);
               }}
-              className={`relative flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl border transition-colors ${
-                isDisabled
-                  ? "opacity-25 cursor-not-allowed border-white/5 bg-zinc-800/50"
-                  : "cursor-pointer border-white/10 bg-zinc-800/80 hover:border-white/20"
-              }`}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: isDisabled ? 0.25 : 1, y: 0 }}
+              className={`
+                relative flex flex-col items-center justify-center gap-2
+                h-20 rounded-xl border transition-colors
+                ${
+                  isDisabled
+                    ? "opacity-[0.2] cursor-not-allowed border-white/[0.04] bg-zinc-800/40"
+                    : "cursor-pointer border-white/[0.08] bg-zinc-800/70 hover:bg-zinc-800 hover:border-white/[0.14]"
+                }
+              `}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: isDisabled ? 0.2 : 1, y: 0 }}
               transition={{
                 type: "spring",
                 stiffness: 300,
                 damping: 25,
-                delay: index * 0.05,
+                delay: index * 0.04,
               }}
-              whileHover={!isDisabled ? { y: -3 } : undefined}
-              whileTap={!isDisabled ? { scale: 0.93 } : undefined}
+              whileHover={!isDisabled ? { y: -2, scale: 1.03 } : undefined}
+              whileTap={!isDisabled ? { scale: 0.95 } : undefined}
             >
               {/* Icon */}
-              <span style={{ color: isDisabled ? undefined : btn.colour }}>
+              <span
+                className="transition-colors"
+                style={{ color: isDisabled ? "rgb(113 113 122)" : btn.colour }}
+              >
                 {btn.icon}
               </span>
 
               {/* Label */}
               <span
-                className="text-xs font-semibold tracking-wide"
-                style={{ color: isDisabled ? undefined : btn.colour }}
+                className="text-xs font-semibold tracking-wide transition-colors"
+                style={{ color: isDisabled ? "rgb(113 113 122)" : btn.colour }}
               >
                 {btn.label}
               </span>
@@ -169,17 +187,19 @@ const ActionPanel: React.FC<ActionPanelProps> = ({
       </div>
 
       {/* Keyboard shortcut hints */}
-      <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
+      <div className="flex items-center justify-center gap-4 mt-3">
         {ACTION_BUTTONS.map((btn) => (
-          <div key={btn.action} className="flex items-center gap-1">
-            <kbd className="inline-flex items-center justify-center w-5 h-5 rounded bg-zinc-700/60 border border-white/10 text-[10px] font-mono text-zinc-400">
+          <div key={btn.action} className="flex items-center gap-1.5">
+            <kbd className="inline-flex items-center justify-center min-w-[20px] h-5 rounded bg-zinc-700/50 border border-white/[0.08] px-1 text-[10px] font-mono font-medium text-zinc-400 leading-none">
               {btn.shortcut}
             </kbd>
-            <span className="text-[10px] text-zinc-500">{btn.label}</span>
+            <span className="text-[10px] text-zinc-500 font-medium">
+              {btn.shortcutLabel}
+            </span>
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

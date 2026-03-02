@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Github, Cpu, Zap, Brain } from "lucide-react";
+import { Github, Brain } from "lucide-react";
 
 import PokerTable from "@/components/OpenGTO/PokerTable";
 import ActionPanel from "@/components/OpenGTO/ActionPanel";
@@ -242,6 +242,16 @@ export default function OpenGTOPage() {
             Runtime, providing instant GTO strategy analysis for any preflop
             situation in 6-max No Limit Hold&apos;em.
           </motion.p>
+          <motion.p
+            className="text-xs text-zinc-600 max-w-2xl mx-auto mb-6 italic"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            This is a simplified web rebuild and may not accurately reflect the
+            full desktop experience. For the complete version, download OpenGTO
+            from GitHub.
+          </motion.p>
 
           {/* Tech badges */}
           <motion.div
@@ -351,27 +361,16 @@ export default function OpenGTOPage() {
           >
             {/* ── Tab Bar ──────────────────────────────────────────────── */}
             <div className="px-6 mb-8">
-              <div className="max-w-4xl mx-auto">
-                <div className="relative inline-flex bg-zinc-900/60 rounded-xl p-1 border border-zinc-800/50">
-                  {/* Animated underline indicator */}
-                  <motion.div
-                    className="absolute top-1 bottom-1 rounded-lg bg-zinc-800"
-                    style={{ width: `calc(50% - 4px)` }}
-                    animate={{
-                      x: activeTab === "trainer" ? 0 : "100%",
-                      marginLeft: activeTab === "trainer" ? 0 : 4,
-                    }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-
+              <div className="max-w-6xl mx-auto">
+                <div className="inline-flex bg-zinc-900/80 rounded-lg p-1 border border-zinc-700/60 gap-1">
                   {TABS.map((tab) => (
                     <button
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key)}
-                      className={`relative z-10 px-6 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      className={`px-6 py-2 text-sm font-semibold rounded-md transition-colors ${
                         activeTab === tab.key
-                          ? "text-white"
-                          : "text-zinc-500 hover:text-zinc-300"
+                          ? "text-amber-400 bg-amber-500/15 border border-amber-500/30"
+                          : "text-zinc-500 hover:text-zinc-300 border border-transparent"
                       }`}
                     >
                       {tab.label}
@@ -457,7 +456,7 @@ function TrainerView({
   onAction,
 }: TrainerViewProps) {
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left: Table + Actions */}
         <div className="flex-1 min-w-0 flex flex-col gap-6">
@@ -472,25 +471,6 @@ function TrainerView({
             onAction={onAction}
             disabled={isAnimating || showResult}
           />
-
-          {/* Feature highlights */}
-          <div className="grid grid-cols-3 gap-3">
-            <FeatureCard
-              icon={<Brain size={18} />}
-              title="Neural Network"
-              description="Trained on millions of solved hands"
-            />
-            <FeatureCard
-              icon={<Zap size={18} />}
-              title="Instant Analysis"
-              description="Sub-millisecond ONNX inference"
-            />
-            <FeatureCard
-              icon={<Cpu size={18} />}
-              title="100% Client-Side"
-              description="Runs entirely in your browser"
-            />
-          </div>
         </div>
 
         {/* Right: Stats Panel */}
@@ -502,24 +482,3 @@ function TrainerView({
   );
 }
 
-// ─── Feature Card ────────────────────────────────────────────────────────────
-
-function FeatureCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-zinc-900/60 border border-white/[0.04] text-center">
-      <span className="text-amber-400">{icon}</span>
-      <span className="text-xs font-semibold text-zinc-300">{title}</span>
-      <span className="text-[10px] text-zinc-500 leading-tight">
-        {description}
-      </span>
-    </div>
-  );
-}
