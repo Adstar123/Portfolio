@@ -60,23 +60,23 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
     return `${s.heroPosition}-${s.heroCards.handType}-${s.pot}-${s.actions.length}`;
   };
 
-  // Sequential villain action reveal
+  // Sequential villain action reveal — runs on mount AND when scenario changes
   useEffect(() => {
     if (!scenario) return;
 
     const currentId = getScenarioId(scenario);
+    const isNewScenario = currentId !== scenarioIdRef.current;
+    scenarioIdRef.current = currentId;
 
-    // Reset reveals when a new scenario arrives
-    if (currentId !== scenarioIdRef.current) {
-      scenarioIdRef.current = currentId;
+    // Get villain actions (non-hero players who have an action)
+    const villainActions = scenario.players.filter(
+      (p) => !p.isHero && p.action
+    );
+
+    if (isNewScenario) {
+      // New scenario: reset and animate reveals sequentially
       setRevealedPositions(new Set());
 
-      // Get villain actions (non-hero players who have an action)
-      const villainActions = scenario.players.filter(
-        (p) => !p.isHero && p.action
-      );
-
-      // Reveal each villain sequentially
       const timers: ReturnType<typeof setTimeout>[] = [];
       villainActions.forEach((player, index) => {
         const timer = setTimeout(() => {
@@ -92,6 +92,11 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
       return () => {
         timers.forEach(clearTimeout);
       };
+    } else {
+      // Same scenario (e.g. remount after tab switch): reveal all immediately
+      setRevealedPositions(
+        new Set(villainActions.map((p) => p.position))
+      );
     }
   }, [scenario]);
 

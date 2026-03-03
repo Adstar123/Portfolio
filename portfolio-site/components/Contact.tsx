@@ -53,7 +53,7 @@ export default function Contact() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="font-heading text-4xl md:text-6xl font-bold gradient-text mb-4"
+          className="font-display uppercase tracking-[0.12em] text-4xl md:text-6xl font-normal gradient-text mb-4"
         >
           Let&apos;s Build Something Brilliant
         </motion.h2>
@@ -166,7 +166,7 @@ export default function Contact() {
               disabled={status === "sending"}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-4 rounded-xl font-heading font-bold text-black flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed bg-accent-amber hover:bg-accent-amber-hover transition-colors"
+              className="w-full py-4 rounded-xl font-display uppercase tracking-wider font-medium text-black flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed bg-accent-amber hover:bg-accent-amber-hover transition-colors"
             >
               {status === "idle" && (
                 <>

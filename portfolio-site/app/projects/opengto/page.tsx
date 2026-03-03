@@ -204,7 +204,7 @@ export default function OpenGTOPage() {
         <div className="relative max-w-4xl mx-auto text-center">
           {/* Title */}
           <motion.h1
-            className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-4"
+            className="font-display uppercase tracking-[0.12em] text-5xl sm:text-6xl md:text-7xl font-normal mb-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 25 }}

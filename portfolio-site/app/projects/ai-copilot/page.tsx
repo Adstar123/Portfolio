@@ -8,12 +8,13 @@ import Image from "next/image";
 // ─── Tech badges ─────────────────────────────────────────────────────────────
 
 const TECH_STACK = [
-  { label: "React", colour: "#61dafb" },
-  { label: "Chrome Extension", colour: "#4285f4" },
-  { label: "Python", colour: "#3776ab" },
-  { label: "LangChain", colour: "#1c3c3c" },
-  { label: "GPT-4", colour: "#74aa9c" },
-  { label: "Firebase", colour: "#ffca28" },
+  { label: "JavaScript", colour: "#f7df1e" },
+  { label: "HTML", colour: "#e34f26" },
+  { label: "CSS", colour: "#1572b6" },
+  { label: "Chrome APIs", colour: "#4285f4" },
+  { label: "REST APIs", colour: "#22c55e" },
+  { label: "LLM Integration", colour: "#74aa9c" },
+  { label: "LaTeX", colour: "#008080" },
 ];
 
 // ─── Screenshot data ─────────────────────────────────────────────────────────
@@ -67,7 +68,7 @@ export default function AICopilotPage() {
         <div className="relative max-w-4xl mx-auto text-center">
           {/* Title */}
           <motion.h1
-            className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-4"
+            className="font-display uppercase tracking-[0.12em] text-5xl sm:text-6xl md:text-7xl font-normal mb-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 25 }}

@@ -19,7 +19,7 @@
   --color-border: #262626;
 
   /* Font families */
-  --font-heading: var(--font-space-grotesk);
+  --font-display: var(--font-eb-garamond);
   --font-body: var(--font-inter);
   --font-mono: var(--font-jetbrains);
 

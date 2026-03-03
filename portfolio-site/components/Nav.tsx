@@ -79,7 +79,7 @@ export default function Nav() {
             {/* Left — Name */}
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="group font-heading text-xl font-bold text-text-primary transition-colors"
+              className="group font-display uppercase tracking-[0.12em] text-lg font-normal text-text-primary transition-colors"
             >
               <span className="group-hover:text-accent-amber transition-all">
                 Adam Jarick
