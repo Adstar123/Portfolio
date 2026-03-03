@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, EB_Garamond, JetBrains_Mono } from "next/font/google";
+import { DM_Sans, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-dm-sans",
 });
 
-const ebGaramond = EB_Garamond({
+const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-eb-garamond",
+  variable: "--font-playfair",
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -60,7 +60,7 @@ export default function RootLayout({
   return (
     <html
       lang="en-AU"
-      className={`${inter.variable} ${ebGaramond.variable} ${jetbrainsMono.variable}`}
+      className={`${dmSans.variable} ${playfairDisplay.variable} ${jetbrainsMono.variable}`}
     >
       <body className="font-body antialiased">{children}</body>
     </html>

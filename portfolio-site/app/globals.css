@@ -19,8 +19,8 @@
   --color-border: #262626;
 
   /* Font families */
-  --font-display: var(--font-eb-garamond);
-  --font-body: var(--font-inter);
+  --font-display: var(--font-playfair);
+  --font-body: var(--font-dm-sans);
   --font-mono: var(--font-jetbrains);
 
   /* shadcn colour mappings — dark values */
@@ -197,6 +197,32 @@ body {
 @keyframes gentle-pulse {
   0%, 100% { opacity: 0.03; }
   50% { opacity: 0.06; }
+}
+
+/* ─── Nav gradient border ─── */
+@property --nav-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes nav-border-rotate {
+  to {
+    --nav-angle: 360deg;
+  }
+}
+
+.nav-gradient-border {
+  background: conic-gradient(
+    from var(--nav-angle),
+    #f59e0b,
+    #ef4444 25%,
+    #fbbf24 50%,
+    transparent 60%,
+    transparent 75%,
+    #f59e0b
+  );
+  animation: nav-border-rotate 6s linear infinite;
 }
 
 /* ─── Reduced motion ─── */
