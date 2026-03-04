@@ -18,14 +18,14 @@ export default function ProjectCard({
   onSelect,
 }: ProjectCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0 });
-  const [spotlight, setSpotlight] = useState({ x: 50, y: 50 });
+  const spotlightRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const card = cardRef.current;
-      if (!card) return;
+      const spot = spotlightRef.current;
+      if (!card || !spot) return;
 
       const rect = card.getBoundingClientRect();
       const centerX = rect.width / 2;
@@ -39,8 +39,8 @@ export default function ProjectCard({
       const spotlightX = (mouseX / rect.width) * 100;
       const spotlightY = (mouseY / rect.height) * 100;
 
-      setTilt({ rotateX, rotateY });
-      setSpotlight({ x: spotlightX, y: spotlightY });
+      card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      spot.style.background = `radial-gradient(circle at ${spotlightX}% ${spotlightY}%, rgba(245,158,11,0.08) 0%, transparent 60%)`;
     },
     []
   );
@@ -51,7 +51,9 @@ export default function ProjectCard({
 
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false);
-    setTilt({ rotateX: 0, rotateY: 0 });
+    if (cardRef.current) {
+      cardRef.current.style.transform = "rotateX(0deg) rotateY(0deg)";
+    }
   }, []);
 
   const visibleTech = project.techStack.slice(0, MAX_VISIBLE_TECH);
@@ -105,7 +107,6 @@ export default function ProjectCard({
           onClick={() => onSelect(project)}
           className="relative rounded-2xl bg-surface p-8 min-h-[320px] overflow-hidden cursor-pointer flex flex-col"
           style={{
-            transform: `rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg)`,
             transition: isHovered
               ? "transform 0.1s ease-out"
               : "transform 0.5s ease-out",
@@ -114,9 +115,9 @@ export default function ProjectCard({
         >
           {/* Spotlight overlay */}
           <div
+            ref={spotlightRef}
             className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-300"
             style={{
-              background: `radial-gradient(circle at ${spotlight.x}% ${spotlight.y}%, rgba(245,158,11,0.08) 0%, transparent 60%)`,
               opacity: isHovered ? 1 : 0,
             }}
           />
