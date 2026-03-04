@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { motion } from "motion/react";
 import { Icon } from "@iconify/react";
 import * as LucideIcons from "lucide-react";
@@ -19,8 +19,8 @@ export default function SkillCard({
   index,
   isFiltered,
 }: SkillCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
+  const innerRef = useRef<HTMLDivElement>(null);
+  const spotlightRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
   // Deterministic "random" scatter based on index
@@ -28,18 +28,32 @@ export default function SkillCard({
   const rotation = (seed - 0.5) * 4; // -2 to +2 degrees
   const yOffset = ((index * 11 + 3) % 13) - 6; // -6 to +6px
 
-  function handleMouseMove(e: React.MouseEvent) {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    setMousePos({
-      x: (e.clientX - rect.left) / rect.width,
-      y: (e.clientY - rect.top) / rect.height,
-    });
-  }
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      const inner = innerRef.current;
+      const spot = spotlightRef.current;
+      if (!inner) return;
+      const rect = inner.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) / rect.width;
+      const my = (e.clientY - rect.top) / rect.height;
 
-  // 3D tilt from mouse position
-  const tiltX = isHovered ? (mousePos.y - 0.5) * -10 : 0;
-  const tiltY = isHovered ? (mousePos.x - 0.5) * 10 : 0;
+      const tiltX = (my - 0.5) * -10;
+      const tiltY = (mx - 0.5) * 10;
+      inner.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+
+      if (spot) {
+        spot.style.background = `radial-gradient(circle 80px at ${mx * 100}% ${my * 100}%, ${colour}15, transparent)`;
+      }
+    },
+    [colour]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    if (innerRef.current) {
+      innerRef.current.style.transform = "rotateX(0deg) rotateY(0deg)";
+    }
+  }, []);
 
   // Get Lucide icon component dynamically
   const LucideIcon =
@@ -51,13 +65,9 @@ export default function SkillCard({
 
   return (
     <motion.div
-      ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setMousePos({ x: 0.5, y: 0.5 });
-      }}
+      onMouseLeave={handleMouseLeave}
       initial={{
         scale: 0,
         rotate: rotation + (index % 2 === 0 ? -15 : 15),
@@ -95,6 +105,7 @@ export default function SkillCard({
       className="relative cursor-pointer select-none"
     >
       <div
+        ref={innerRef}
         className="relative overflow-hidden rounded-xl p-4 flex flex-col items-center gap-3 w-[100px] h-[110px] grain"
         style={{
           background: "rgba(20, 20, 20, 0.8)",
@@ -107,17 +118,14 @@ export default function SkillCard({
             : isHovered
               ? `0 0 20px ${colour}20, 0 0 40px ${colour}10, 0 8px 32px rgba(0,0,0,0.4)`
               : "0 4px 16px rgba(0,0,0,0.2)",
-          transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`,
           transition: "border-color 0.2s, border-left-color 0.2s, box-shadow 0.3s, transform 0.15s ease-out",
         }}
       >
         {/* Cursor-following spotlight */}
         {isHovered && (
           <div
+            ref={spotlightRef}
             className="absolute inset-0 pointer-events-none"
-            style={{
-              background: `radial-gradient(circle 80px at ${mousePos.x * 100}% ${mousePos.y * 100}%, ${colour}15, transparent)`,
-            }}
           />
         )}
 

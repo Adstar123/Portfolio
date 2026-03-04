@@ -15,6 +15,7 @@ export default function SkillCardGalaxy() {
   const [activeCategory, setActiveCategory] = useState("All");
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
+  const isVisibleRef = useRef(false);
 
   // Flatten all skills with their category info
   const allSkills: FlatSkill[] = useMemo(() => {
@@ -73,8 +74,22 @@ export default function SkillCardGalaxy() {
     }
 
     function loop() {
-      updateMagnets();
+      if (isVisibleRef.current) {
+        updateMagnets();
+      }
       rafId = requestAnimationFrame(loop);
+    }
+
+    // Only run the magnet effect when the skills section is visible
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisibleRef.current = entry.isIntersecting;
+      },
+      { rootMargin: "100px" }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
     window.addEventListener("mousemove", onMouseMove);
@@ -83,6 +98,7 @@ export default function SkillCardGalaxy() {
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
       cancelAnimationFrame(rafId);
+      observer.disconnect();
     };
   }, [updateMagnets]);
 
