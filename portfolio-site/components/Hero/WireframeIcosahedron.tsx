@@ -236,7 +236,7 @@ export default function WireframeIcosahedron() {
     >
       <Canvas
         camera={{ position: [0, 0, 5], fov: 50 }}
-        dpr={[1, 1.5]}
+        dpr={typeof window !== "undefined" && (navigator.hardwareConcurrency ?? 8) <= 4 ? 1 : [1, 1.5]}
         style={{ background: "transparent" }}
         gl={{ alpha: true, antialias: true, powerPreference: "default" }}
       >
