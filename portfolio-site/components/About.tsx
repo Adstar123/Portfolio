@@ -66,7 +66,7 @@ export default function About() {
         <div className="order-2 md:order-1 md:col-span-3">
           {/* Section heading */}
           <div className="mb-8">
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-text-primary">
+            <h2 className="font-display uppercase tracking-[0.12em] text-4xl md:text-5xl font-normal text-text-primary">
               About Me
             </h2>
             <motion.div

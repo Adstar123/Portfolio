@@ -21,7 +21,7 @@ export default function SkillsGrid() {
           }}
         >
           <h3
-            className="font-heading text-lg font-semibold mb-4"
+            className="text-lg font-semibold mb-4"
             style={{ color: category.colour }}
           >
             {category.name}

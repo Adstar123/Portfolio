@@ -123,7 +123,7 @@ export default function ProjectCard({
 
           {/* Content */}
           <div className="relative z-10 flex flex-col flex-1">
-            <h3 className="font-heading text-2xl font-bold text-text-primary mb-2">
+            <h3 className="text-2xl font-bold text-text-primary mb-2">
               {project.title}
             </h3>
 
@@ -150,7 +150,7 @@ export default function ProjectCard({
 
             {/* View project link */}
             <div className="mt-auto">
-              <span className="gradient-text font-heading text-sm font-semibold">
+              <span className="gradient-text font-display uppercase tracking-wider text-sm font-medium">
                 View Project &rarr;
               </span>
             </div>

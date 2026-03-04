@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { X, Github, ExternalLink } from "lucide-react";
+import { X, Github, ExternalLink, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import type { Project } from "@/lib/data";
 
 interface ProjectModalProps {
@@ -44,7 +45,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
 
             {/* Content */}
             <div className="p-8 md:p-10">
-              <h2 className="font-heading text-3xl font-bold text-text-primary">
+              <h2 className="text-3xl font-bold text-text-primary">
                 {project.title}
               </h2>
 
@@ -68,7 +69,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
               </div>
 
               {/* Tech Stack */}
-              <h3 className="font-heading text-sm uppercase tracking-widest text-text-secondary/60 mb-3">
+              <h3 className="text-sm uppercase tracking-widest text-text-secondary/60 mb-3">
                 Tech Stack
               </h3>
               <div className="flex flex-wrap gap-2 mb-8">
@@ -82,6 +83,17 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                 ))}
               </div>
 
+              {/* Explore Full Project Button */}
+              {project.route && (
+                <Link
+                  href={project.route}
+                  className="flex items-center justify-center gap-3 w-full py-4 mb-6 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-display uppercase tracking-wider font-medium text-base hover:scale-[1.02] transition-all"
+                >
+                  {project.routeLabel || "Explore Full Project"}
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              )}
+
               {/* Links */}
               <div className="flex flex-wrap gap-4">
                 {project.github && (
@@ -89,7 +101,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                     href={project.github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent-amber hover:bg-accent-amber-hover text-black font-heading font-semibold text-sm hover:scale-105 transition-all"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent-amber hover:bg-accent-amber-hover text-black font-display uppercase tracking-wider font-medium text-sm hover:scale-105 transition-all"
                   >
                     <Github className="w-4 h-4" />
                     GitHub
@@ -100,7 +112,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                     href={project.live}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/10 text-text-secondary font-heading font-semibold text-sm hover:bg-white/5 hover:text-text-primary transition-colors"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/10 text-text-secondary font-display uppercase tracking-wider font-medium text-sm hover:bg-white/5 hover:text-text-primary transition-colors"
                   >
                     <ExternalLink className="w-4 h-4" />
                     Live Demo
