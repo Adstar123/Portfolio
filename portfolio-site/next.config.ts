@@ -10,11 +10,11 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
+              "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' va.vercel-scripts.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self'",
-              "connect-src 'self' api.iconify.design",
+              "connect-src 'self' api.iconify.design va.vercel-scripts.com",
               "worker-src 'self' blob:",
               "object-src 'none'",
               "frame-ancestors 'none'",
