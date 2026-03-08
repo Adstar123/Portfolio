@@ -112,25 +112,25 @@ function ExpandedExperience({ experience, onClose }: ExpandedExperienceProps) {
       transition: { staggerChildren: 0.06, delayChildren: 0.2 },
     },
     exit: { opacity: 0, transition: { duration: 0.25 } },
-  };
+  } as const;
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+      transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
     },
-  };
+  } as const;
 
   const bulletVariants = {
     hidden: { opacity: 0, x: -30 },
     visible: {
       opacity: 1,
       x: 0,
-      transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+      transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
     },
-  };
+  } as const;
 
   const techPillVariants = {
     hidden: { opacity: 0, y: 20, scale: 0.8 },
@@ -138,9 +138,9 @@ function ExpandedExperience({ experience, onClose }: ExpandedExperienceProps) {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { type: "spring", stiffness: 200, damping: 20 },
+      transition: { type: "spring" as const, stiffness: 200, damping: 20 },
     },
-  };
+  } as const;
 
   return (
     <motion.div
