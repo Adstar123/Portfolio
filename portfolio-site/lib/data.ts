@@ -38,6 +38,14 @@ export interface WorkExperience {
   description: string[];
   techStack: string[];
   companyIcon: string;
+  stats?: ExperienceStat[];
+}
+
+export interface ExperienceStat {
+  value: string;
+  label: string;
+  numericEnd: number;
+  suffix?: string;
 }
 
 export const projects: Project[] = [
@@ -224,7 +232,12 @@ export const workExperience: WorkExperience[] = [
       "Prisma",
       "Redis",
     ],
-    companyIcon: "mdi:shield-lock",
+    companyIcon: "mdi:robot-outline",
+    stats: [
+      { value: "1,000+", label: "messages/day", numericEnd: 1000, suffix: "+" },
+      { value: "500+", label: "users handled", numericEnd: 500, suffix: "+" },
+      { value: "3", label: "cloud providers", numericEnd: 3 },
+    ],
   },
   {
     id: "webschool",
