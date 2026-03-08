@@ -28,6 +28,26 @@ export interface SocialLink {
   icon: string;
 }
 
+export interface WorkExperience {
+  id: string;
+  company: string;
+  role: string;
+  location: string;
+  period: string;
+  type: "full-time" | "internship";
+  description: string[];
+  techStack: string[];
+  companyIcon: string;
+  stats?: ExperienceStat[];
+}
+
+export interface ExperienceStat {
+  value: string;
+  label: string;
+  numericEnd: number;
+  suffix?: string;
+}
+
 export const projects: Project[] = [
   {
     id: "opengto",
@@ -182,6 +202,57 @@ export const socialLinks: SocialLink[] = [
     name: "Phone",
     url: "tel:0431773937",
     icon: "phone",
+  },
+];
+
+export const workExperience: WorkExperience[] = [
+  {
+    id: "apate",
+    company: "Apate.AI",
+    role: "Software Engineer",
+    location: "Town Hall, NSW",
+    period: "Oct 2024 — Present",
+    type: "full-time",
+    description: [
+      "Architected and deployed an enterprise-grade anti-scam WhatsApp bot, Telegram Bot and Email bot using TypeScript, WebSocket manipulation, and OpenAI GPT, processing 1,000+ messages daily across multiple client deployments.",
+      "Developed comprehensive REST API backend with Hono framework and Prisma ORM, featuring multiple endpoints for chat management, bot configuration, and real-time state monitoring with PostgreSQL database integration.",
+      "Implemented sophisticated AI-powered content analysis system detecting financial scams, cryptocurrency fraud, and sensitive data exposure using multi-modal OpenAI vision and text analysis.",
+      "Worked on client-facing portal delivering real-time scam analytics using React, TypeScript, Redis, ClickHouse, Airbyte, Superset and PostgreSQL. Handled 500+ users and their authentication using JWT tokens through Keycloak.",
+      "Containerised application with Docker and deployed to Azure, GCloud and AWS Kubernetes clusters, establishing CI/CD pipelines, Kubernetes services, Helm charts, ConfigMaps and monitoring infrastructure serving multiple enterprise clients.",
+    ],
+    techStack: [
+      "TypeScript",
+      "React",
+      "Node.js",
+      "Docker",
+      "Kubernetes",
+      "AWS",
+      "Azure",
+      "PostgreSQL",
+      "Prisma",
+      "Redis",
+    ],
+    companyIcon: "mdi:robot-outline",
+    stats: [
+      { value: "1,000+", label: "messages/day", numericEnd: 1000, suffix: "+" },
+      { value: "500+", label: "users handled", numericEnd: 500, suffix: "+" },
+      { value: "3", label: "cloud providers", numericEnd: 3 },
+    ],
+  },
+  {
+    id: "webschool",
+    company: "Webschool.au",
+    role: "AI Engineer Intern",
+    location: "Macquarie, NSW",
+    period: "June 2025 — Nov 2025",
+    type: "internship",
+    description: [
+      "Architected and built a Voice Authentication Neural Network for a platform with the purpose of two-factor authentication, breaking down business objectives into actionable tasks using Agile methodologies.",
+      "Utilised the PyTorch library to create a Siamese Neural Network which compared two sets of voices to authenticate if they were the same voice for login purposes, using the VoxCeleb database for training with an input of 13 Mel-frequency cepstral coefficients per audio frame and cosine similarity.",
+      "Deployed on the company's portal, interweaving its functionality with existing infrastructure.",
+    ],
+    techStack: ["Python", "PyTorch", "Azure", "Docker"],
+    companyIcon: "mdi:school",
   },
 ];
 
