@@ -1,0 +1,15 @@
+{
+  "planPath": "docs/plans/2026-03-07-experience-cv-implementation.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Copy resume PDF to public", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Add work experience data", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Create DownloadCVButton component", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 4: Integrate DownloadCVButton into HeroText", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Create ExperienceCard component", "status": "pending", "blockedBy": [2]},
+    {"id": 6, "subject": "Task 6: Create ExperienceTimeline component", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 7: Update Nav with Experience link", "status": "pending", "blockedBy": [2]},
+    {"id": 8, "subject": "Task 8: Integrate Experience into page.tsx", "status": "pending", "blockedBy": [6, 7]},
+    {"id": 9, "subject": "Task 9: Visual testing and polish", "status": "pending", "blockedBy": [4, 8]}
+  ],
+  "lastUpdated": "2026-03-07T00:00:00Z"
+}

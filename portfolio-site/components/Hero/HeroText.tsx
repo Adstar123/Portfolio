@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import DownloadCVButton from "./DownloadCVButton";
 
 const name = "Adam Jarick";
 const subtitle = "Software Engineer";
@@ -69,6 +70,8 @@ export default function HeroText() {
           |
         </motion.span>
       </motion.div>
+
+      <DownloadCVButton />
 
       {/* Subtle glow behind text */}
       <div className="absolute inset-0 -z-10 flex items-center justify-center">

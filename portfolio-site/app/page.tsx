@@ -8,6 +8,7 @@ import ScrollProgress from "@/components/ScrollProgress";
 import HeroText from "@/components/Hero/HeroText";
 import ScrollIndicator from "@/components/Hero/ScrollIndicator";
 import About from "@/components/About";
+import ExperienceTimeline from "@/components/Experience/ExperienceTimeline";
 import SkillCardGalaxy from "@/components/Skills/SkillCardGalaxy";
 import SkillsGrid from "@/components/Skills/SkillsGrid";
 import ProjectCard from "@/components/Projects/ProjectCard";
@@ -125,6 +126,11 @@ export default function Home() {
 
         {/* About */}
         <About />
+
+        <SectionDivider />
+
+        {/* Experience */}
+        <ExperienceTimeline />
 
         <SectionDivider />
 
