@@ -1,26 +1,45 @@
-import * as ort from "onnxruntime-web/wasm";
+import type * as OrtType from "onnxruntime-web/wasm";
 import { ActionType } from "./types";
 
-let session: ort.InferenceSession | null = null;
-let loading: Promise<ort.InferenceSession> | null = null;
+type OrtModule = typeof OrtType;
 
-// Self-host the WASM assets so mobile browsers (Safari in particular) can
-// load them without hitting the CDN — which is blocked by our CSP's
-// connect-src directive. Also force single-threaded mode so we don't need
-// SharedArrayBuffer / cross-origin isolation to instantiate the runtime.
-ort.env.wasm.wasmPaths = "/ort/";
-ort.env.wasm.numThreads = 1;
+let ort: OrtModule | null = null;
+let session: OrtType.InferenceSession | null = null;
+let loading: Promise<OrtType.InferenceSession> | null = null;
+
+/**
+ * Dynamically import onnxruntime-web on the client. A top-level import would
+ * run during SSR/prerender on Node and trip an "Invalid URL" error when the
+ * bundler's asset paths (e.g. /_next/static/media/...mjs) are resolved
+ * against Node's URL parser. Keeping it lazy also means the ~400 KB runtime
+ * never ships to users who don't open the trainer.
+ *
+ * We configure the runtime to:
+ *  - Load WASM from /ort/ (self-hosted so our CSP's connect-src allows it,
+ *    and to avoid the jsdelivr CDN default).
+ *  - Run single-threaded (avoids needing SharedArrayBuffer / COOP+COEP to
+ *    boot, which mobile Safari is particularly strict about).
+ */
+async function loadOrt(): Promise<OrtModule> {
+  if (ort) return ort;
+  const mod = await import("onnxruntime-web/wasm");
+  mod.env.wasm.wasmPaths = "/ort/";
+  mod.env.wasm.numThreads = 1;
+  ort = mod;
+  return mod;
+}
 
 /**
  * Lazy-load the ONNX model. Returns cached session on subsequent calls.
  * Guards against concurrent callers racing on the same promise.
  */
-export async function getSession(): Promise<ort.InferenceSession> {
+export async function getSession(): Promise<OrtType.InferenceSession> {
   if (session) return session;
   if (loading) return loading;
 
   loading = (async () => {
-    const sess = await ort.InferenceSession.create(
+    const ortMod = await loadOrt();
+    const sess = await ortMod.InferenceSession.create(
       "/models/opengto_model.onnx",
       { executionProviders: ["wasm"] }
     );
@@ -43,7 +62,8 @@ let inferenceQueue: Promise<void> = Promise.resolve();
  */
 async function runInference(features: Float32Array): Promise<Float32Array> {
   const sess = await getSession();
-  const tensor = new ort.Tensor("float32", features, [1, 317]);
+  const ortMod = await loadOrt();
+  const tensor = new ortMod.Tensor("float32", features, [1, 317]);
 
   // Queue this inference behind any in-flight call
   const result = new Promise<Float32Array>((resolve, reject) => {
