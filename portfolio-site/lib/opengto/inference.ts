@@ -4,6 +4,13 @@ import { ActionType } from "./types";
 let session: ort.InferenceSession | null = null;
 let loading: Promise<ort.InferenceSession> | null = null;
 
+// Self-host the WASM assets so mobile browsers (Safari in particular) can
+// load them without hitting the CDN — which is blocked by our CSP's
+// connect-src directive. Also force single-threaded mode so we don't need
+// SharedArrayBuffer / cross-origin isolation to instantiate the runtime.
+ort.env.wasm.wasmPaths = "/ort/";
+ort.env.wasm.numThreads = 1;
+
 /**
  * Lazy-load the ONNX model. Returns cached session on subsequent calls.
  * Guards against concurrent callers racing on the same promise.
