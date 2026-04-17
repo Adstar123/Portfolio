@@ -8,21 +8,41 @@ let session: OrtType.InferenceSession | null = null;
 let loading: Promise<OrtType.InferenceSession> | null = null;
 
 /**
- * Dynamically import onnxruntime-web on the client. A top-level import would
- * run during SSR/prerender on Node and trip an "Invalid URL" error when the
- * bundler's asset paths (e.g. /_next/static/media/...mjs) are resolved
- * against Node's URL parser. Keeping it lazy also means the ~400 KB runtime
- * never ships to users who don't open the trainer.
+ * Load onnxruntime-web at runtime, bypassing the Next.js bundler.
  *
- * We configure the runtime to:
- *  - Load WASM from /ort/ (self-hosted so our CSP's connect-src allows it,
- *    and to avoid the jsdelivr CDN default).
- *  - Run single-threaded (avoids needing SharedArrayBuffer / COOP+COEP to
- *    boot, which mobile Safari is particularly strict about).
+ * Background: Turbopack treats the .mjs files inside onnxruntime-web as
+ * static assets and rewrites them to /_next/static/media/<name>.<hash>.mjs
+ * with differing hashes for each file. Inside the runtime, the bundled
+ * entry uses `new URL('./ort-wasm-simd-threaded.mjs', import.meta.url)`
+ * to locate its sibling loader — which resolves to the non-hashed path
+ * and 404s, so `InferenceSession.create` rejects almost immediately.
+ * `ort.env.wasm.wasmPaths` only redirects the .wasm binary, not the .mjs
+ * sibling loader.
+ *
+ * Fix: self-host the whole /ort/ tree in /public and load the entry via
+ * a dynamic import the bundler is told to leave alone. This keeps all of
+ * ORT's internal relative lookups on the same origin, all with the
+ * filenames ORT expects. The webpackIgnore/turbopackIgnore magic comments
+ * prevent the bundler from rewriting the URL.
+ *
+ * Runtime config:
+ *  - wasmPaths = "/ort/" so the .wasm binary resolves alongside the .mjs.
+ *  - numThreads = 1 avoids needing SharedArrayBuffer / COOP+COEP, which
+ *    mobile Safari is especially strict about.
  */
 async function loadOrt(): Promise<OrtModule> {
   if (ort) return ort;
-  const mod = await import("onnxruntime-web/wasm");
+
+  // Build the URL at runtime so TypeScript doesn't try to resolve it as a
+  // module path at compile time. The magic comments keep the bundler from
+  // rewriting the URL — the browser performs a native dynamic import of the
+  // file we ship under /public/ort/.
+  const url = "/ort/ort.wasm.bundle.min.mjs";
+  const mod = (await import(
+    /* webpackIgnore: true */ /* turbopackIgnore: true */
+    url
+  )) as OrtModule;
+
   mod.env.wasm.wasmPaths = "/ort/";
   mod.env.wasm.numThreads = 1;
   ort = mod;
