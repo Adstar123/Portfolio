@@ -139,6 +139,7 @@ export const skillCategories: SkillCategory[] = [
       { name: "JWT", icon: "key", iconType: "lucide" },
       { name: "WebSockets", icon: "cable", iconType: "lucide" },
       { name: "Resend", icon: "send", iconType: "lucide" },
+      { name: "Postal", icon: "mail", iconType: "lucide" },
       { name: "Keycloak", icon: "simple-icons:keycloak", iconType: "iconify" },
     ],
   },
