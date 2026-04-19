@@ -46,6 +46,7 @@ export default function OpenGTOPage() {
   // Model loading state
   const [modelLoaded, setModelLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Trainer state
   const [scenario, setScenario] = useState<Scenario | null>(null);
@@ -95,6 +96,22 @@ export default function OpenGTOPage() {
       } catch (err) {
         console.error("Failed to load ONNX model:", err);
         clearInterval(interval);
+        if (!cancelled) {
+          // Surface the real error in the UI so we can see what's failing
+          // on mobile (where the console is inaccessible). Capture name +
+          // message + stack so we can tell WASM compile errors apart from
+          // network/CSP failures.
+          const e = err as Error;
+          const detail = [
+            e?.name,
+            e?.message,
+            typeof navigator !== "undefined" ? `UA: ${navigator.userAgent}` : null,
+            e?.stack ? `Stack:\n${e.stack}` : null,
+          ]
+            .filter(Boolean)
+            .join("\n");
+          setLoadError(detail || String(err));
+        }
       }
     }
 
@@ -345,6 +362,17 @@ export default function OpenGTOPage() {
                 <p className="text-xs font-mono text-zinc-500 tabular-nums">
                   {Math.round(loadingProgress)}%
                 </p>
+
+                {loadError && (
+                  <div className="w-full mt-2 p-3 rounded-lg bg-red-950/40 border border-red-500/30 text-left">
+                    <p className="text-xs font-semibold text-red-300 mb-1">
+                      Failed to load model
+                    </p>
+                    <pre className="text-[10px] font-mono text-red-200/90 whitespace-pre-wrap break-all leading-relaxed">
+                      {loadError}
+                    </pre>
+                  </div>
+                )}
               </div>
             </div>
           </motion.section>
