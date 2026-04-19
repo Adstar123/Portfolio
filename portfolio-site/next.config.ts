@@ -4,14 +4,25 @@ const nextConfig: NextConfig = {
   // The /api/opengto/infer serverless function needs extra files that
   // Next.js' static tracer won't pick up on its own:
   //  - The ONNX model (loaded at runtime via `process.cwd()` path join).
-  //  - The onnxruntime-node Linux x64 binaries. Tracing on Windows/macOS
-  //    only resolves the host platform's .node file, but Vercel runs on
-  //    Linux x64. We force both the Linux binding and its shared library
-  //    to be included so the function actually starts on Vercel.
+  //  - The onnxruntime-node Linux x64 binary + shared library. Tracing on
+  //    Windows/macOS only resolves the host platform's .node file, but
+  //    Vercel runs on Linux x64.
   outputFileTracingIncludes: {
     "/api/opengto/infer": [
       "public/models/opengto_model.onnx",
       "node_modules/onnxruntime-node/bin/napi-v6/linux/x64/**",
+    ],
+  },
+  // Without this, Vercel's tracer pulls in ALL 5 platform binaries from
+  // onnxruntime-node (darwin/arm64, linux/arm64, linux/x64, win32/arm64,
+  // win32/x64 — ~211 MB total) and the function blows past Vercel's
+  // 250 MB uncompressed size limit. We only need Linux x64 at runtime,
+  // so exclude the rest.
+  outputFileTracingExcludes: {
+    "*": [
+      "node_modules/onnxruntime-node/bin/napi-v6/darwin/**",
+      "node_modules/onnxruntime-node/bin/napi-v6/win32/**",
+      "node_modules/onnxruntime-node/bin/napi-v6/linux/arm64/**",
     ],
   },
   async headers() {
