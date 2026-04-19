@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Tell Next.js to leave onnxruntime-node alone — don't try to bundle it.
+  // Without this, Turbopack creates a symlinked copy of the whole package
+  // under .next/node_modules/onnxruntime-node-<hash>/, which Vercel then
+  // packages verbatim — including all 5 platform binaries (~336 MB) that
+  // our outputFileTracingExcludes can't reach through the hashed symlink.
+  // As a server-external package, onnxruntime-node is required at runtime
+  // from the real node_modules path, where excludes apply normally.
+  serverExternalPackages: ["onnxruntime-node"],
   // The /api/opengto/infer serverless function needs extra files that
   // Next.js' static tracer won't pick up on its own:
   //  - The ONNX model (loaded at runtime via `process.cwd()` path join).
