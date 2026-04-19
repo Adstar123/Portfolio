@@ -1,141 +1,105 @@
-import type * as OrtType from "onnxruntime-web/wasm";
 import { ActionType } from "./types";
 
-type OrtModule = typeof OrtType;
-
-let ort: OrtModule | null = null;
-let session: OrtType.InferenceSession | null = null;
-let loading: Promise<OrtType.InferenceSession> | null = null;
-
 /**
- * Load onnxruntime-web at runtime, bypassing the Next.js bundler.
- *
- * Background: Turbopack treats the .mjs files inside onnxruntime-web as
- * static assets and rewrites them to /_next/static/media/<name>.<hash>.mjs
- * with differing hashes for each file. Inside the runtime, the bundled
- * entry uses `new URL('./ort-wasm-simd-threaded.mjs', import.meta.url)`
- * to locate its sibling loader — which resolves to the non-hashed path
- * and 404s, so `InferenceSession.create` rejects almost immediately.
- * `ort.env.wasm.wasmPaths` only redirects the .wasm binary, not the .mjs
- * sibling loader.
- *
- * Fix: self-host the whole /ort/ tree in /public and load the entry via
- * a dynamic import the bundler is told to leave alone. This keeps all of
- * ORT's internal relative lookups on the same origin, all with the
- * filenames ORT expects. The webpackIgnore/turbopackIgnore magic comments
- * prevent the bundler from rewriting the URL.
- *
- * Runtime config:
- *  - wasmPaths = "/ort/" so the .wasm binary resolves alongside the .mjs.
- *  - numThreads = 1 avoids needing SharedArrayBuffer / COOP+COEP, which
- *    mobile Safari is especially strict about.
+ * Client-side inference client. The actual neural network runs on the
+ * server (app/api/opengto/infer/route.ts) because the onnxruntime-web
+ * WASM runtime is ~12 MB and hits iOS Safari's per-tab WASM memory
+ * budget with `RangeError: Out of memory` during instantiation. Running
+ * inference server-side via onnxruntime-node has a fixed ~50 ms cold
+ * start and sub-millisecond per-call latency, which works everywhere.
  */
-export async function loadOrt(): Promise<OrtModule> {
-  if (ort) return ort;
 
-  // Build the URL at runtime so TypeScript doesn't try to resolve it as a
-  // module path at compile time. The magic comments keep the bundler from
-  // rewriting the URL — the browser performs a native dynamic import of the
-  // file we ship under /public/ort/.
-  const url = "/ort/ort.wasm.bundle.min.mjs";
-  const mod = (await import(
-    /* webpackIgnore: true */ /* turbopackIgnore: true */
-    url
-  )) as OrtModule;
+const INFER_ENDPOINT = "/api/opengto/infer";
 
-  mod.env.wasm.wasmPaths = "/ort/";
-  mod.env.wasm.numThreads = 1;
-  ort = mod;
-  return mod;
+interface InferItem {
+  features: number[];
+  legalActions: number[];
+}
+interface InferResponse {
+  probs: number[][];
 }
 
-/**
- * Lazy-load the ONNX model. Returns cached session on subsequent calls.
- * Guards against concurrent callers racing on the same promise.
- */
-export async function getSession(): Promise<OrtType.InferenceSession> {
-  if (session) return session;
-  if (loading) return loading;
-
-  loading = (async () => {
-    const ortMod = await loadOrt();
-    const sess = await ortMod.InferenceSession.create(
-      "/models/opengto_model.onnx",
-      { executionProviders: ["wasm"] }
-    );
-    session = sess;
-    loading = null;
-    return sess;
-  })();
-
-  return loading;
-}
-
-/** Mutex to serialise inference calls (ONNX WASM backend is single-threaded). */
-let inferenceQueue: Promise<void> = Promise.resolve();
-
-/**
- * Run inference on a 317-dim feature vector.
- * Returns raw logits (6 values, one per action).
- * Serialised through a queue because the WASM backend cannot handle
- * concurrent .run() calls on the same session.
- */
-async function runInference(features: Float32Array): Promise<Float32Array> {
-  const sess = await getSession();
-  const ortMod = await loadOrt();
-  const tensor = new ortMod.Tensor("float32", features, [1, 317]);
-
-  // Queue this inference behind any in-flight call
-  const result = new Promise<Float32Array>((resolve, reject) => {
-    inferenceQueue = inferenceQueue.then(async () => {
-      try {
-        const results = await sess.run({ features: tensor });
-        const outputName = sess.outputNames[0];
-        resolve(results[outputName].data as Float32Array);
-      } catch (err) {
-        reject(err);
-      }
-    });
+async function postInfer(items: InferItem[]): Promise<number[][]> {
+  const res = await fetch(INFER_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items }),
   });
-
-  return result;
+  if (!res.ok) {
+    let detail = `${res.status} ${res.statusText}`;
+    try {
+      const data = (await res.json()) as { error?: string };
+      if (data.error) detail = `${detail}: ${data.error}`;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(`Inference request failed — ${detail}`);
+  }
+  const data = (await res.json()) as InferResponse;
+  if (!data || !Array.isArray(data.probs)) {
+    throw new Error("Malformed inference response");
+  }
+  return data.probs;
 }
 
 /**
- * Apply softmax to logits with illegal action masking.
- * legalMask: boolean array of length 6, true = legal.
- *
- * Note: Float32Array.map() and .filter() return Float32Array, not regular
- * arrays, so we convert to a plain number[] first to avoid type issues
- * (e.g. -Infinity cannot be stored in Float32Array, and filter must return
- * a standard array for Math.max spread).
+ * Warm the server session (and the browser's connection to /api/opengto/infer)
+ * so the first real inference call isn't paying cold-start cost. Errors
+ * propagate — if the server can't load the model at all, the trainer can't
+ * work, and we want that surfaced in the loading UI instead of the user
+ * hitting a silent failure on their first action.
  */
-function maskedSoftmax(logits: Float32Array, legalMask: boolean[]): number[] {
-  const logitArr = Array.from(logits);
-  const masked = logitArr.map((v, i) => (legalMask[i] ? v : -Infinity));
-  const finite = masked.filter((v) => v !== -Infinity);
-  const maxVal = finite.length > 0 ? Math.max(...finite) : 0;
-  const exps = masked.map((v) => (v === -Infinity ? 0 : Math.exp(v - maxVal)));
-  const sum = exps.reduce((a, b) => a + b, 0);
-  return exps.map((v) => (sum > 0 ? v / sum : 0));
+export async function getSession(): Promise<void> {
+  // Zero-filled feature vector + all actions legal — cheap dummy inference
+  // to load the model on the server.
+  const features = new Array<number>(317).fill(0);
+  await postInfer([{ features, legalActions: [0, 1, 2, 3, 4, 5] }]);
 }
 
 /**
- * Get GTO strategy for a game state.
- * Returns probability distribution over 6 actions.
+ * Convert the plain JS feature array (Float32Array or number[]) to a
+ * plain number[] the JSON body can carry.
+ */
+function toPlainArray(features: Float32Array | number[]): number[] {
+  if (Array.isArray(features)) return features;
+  return Array.from(features);
+}
+
+/**
+ * Get GTO strategy for a single game state.
+ * Returns a length-6 probability distribution over the ActionType enum.
  */
 export async function getGTOStrategy(
-  features: Float32Array,
+  features: Float32Array | number[],
   legalActions: ActionType[]
 ): Promise<number[]> {
-  const logits = await runInference(features);
-  const legalMask = Array.from({ length: 6 }, (_, i) =>
-    legalActions.includes(i as ActionType)
-  );
-  return maskedSoftmax(logits, legalMask);
+  const [probs] = await postInfer([
+    { features: toPlainArray(features), legalActions: legalActions as number[] },
+  ]);
+  return probs;
 }
 
-/** Check if the ONNX model has been loaded */
+/**
+ * Batched variant for the Range Viewer, which needs 169 inferences.
+ * Sent as a single HTTP request to avoid 169 round-trips.
+ */
+export async function getGTOStrategyBatch(
+  items: Array<{ features: Float32Array | number[]; legalActions: ActionType[] }>
+): Promise<number[][]> {
+  if (items.length === 0) return [];
+  const body: InferItem[] = items.map((it) => ({
+    features: toPlainArray(it.features),
+    legalActions: it.legalActions as number[],
+  }));
+  return postInfer(body);
+}
+
+/** Kept as a warm-up helper for backward compatibility with existing call sites. */
+export async function loadOrt(): Promise<void> {
+  // Nothing to load client-side anymore. The server handles ONNX.
+}
+
+/** Unused now — inference is remote — but kept so existing imports compile. */
 export function isModelLoaded(): boolean {
-  return session !== null;
+  return true;
 }

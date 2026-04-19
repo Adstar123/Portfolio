@@ -355,10 +355,10 @@ export default function OpenGTOPage() {
 
                 <div className="text-center">
                   <p className="text-sm font-semibold text-zinc-200 mb-1">
-                    Loading neural network...
+                    Waking up neural network...
                   </p>
                   <p className="text-xs text-zinc-500">
-                    Downloading ONNX model (~2.3 MB)
+                    Connecting to inference server
                   </p>
                 </div>
 

@@ -1,6 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The /api/opengto/infer serverless function needs extra files that
+  // Next.js' static tracer won't pick up on its own:
+  //  - The ONNX model (loaded at runtime via `process.cwd()` path join).
+  //  - The onnxruntime-node Linux x64 binaries. Tracing on Windows/macOS
+  //    only resolves the host platform's .node file, but Vercel runs on
+  //    Linux x64. We force both the Linux binding and its shared library
+  //    to be included so the function actually starts on Vercel.
+  outputFileTracingIncludes: {
+    "/api/opengto/infer": [
+      "public/models/opengto_model.onnx",
+      "node_modules/onnxruntime-node/bin/napi-v6/linux/x64/**",
+    ],
+  },
   async headers() {
     return [
       {

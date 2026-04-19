@@ -19,7 +19,7 @@ import type { ActionHistoryEntry } from "./featureVector";
 import { buildFeatureVector } from "./featureVector";
 import { buildFeatureInput, buildRangeScenario } from "./scenarioGenerator";
 import { getAllHandTypes } from "./card";
-import { getGTOStrategy, getSession, loadOrt } from "./inference";
+import { getGTOStrategy, getGTOStrategyBatch, getSession, loadOrt } from "./inference";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -179,20 +179,24 @@ export async function getRangeStrategy(
 
   const legalActionTypes = uiActionsToActionTypes(legalUIActions);
 
-  // Ensure the model is loaded before the hot loop
-  await getSession();
-
   const allHandTypes = getAllHandTypes();
-  const rangeData: RangeData = {};
 
-  // Run inference for each of the 169 hand types
-  for (const handType of allHandTypes) {
+  // Send all 169 hands as one batched request. Far fewer round-trips than
+  // the old in-browser WASM loop, which ran them serially.
+  const items = allHandTypes.map((handType) => {
     const featureInput = { ...baseInput, handType };
-    const features = buildFeatureVector(featureInput);
-    const rawProbs = await getGTOStrategy(features, legalActionTypes);
-    rangeData[handType] = toGTOStrategy(rawProbs);
-  }
+    return {
+      features: buildFeatureVector(featureInput),
+      legalActions: legalActionTypes,
+    };
+  });
 
+  const probsBatch = await getGTOStrategyBatch(items);
+
+  const rangeData: RangeData = {};
+  for (let i = 0; i < allHandTypes.length; i++) {
+    rangeData[allHandTypes[i]] = toGTOStrategy(probsBatch[i]);
+  }
   return rangeData;
 }
 
