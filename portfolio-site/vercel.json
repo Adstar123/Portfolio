@@ -1,5 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "npm install && node scripts/strip-ort-binaries.js",
+  "installCommand": "ONNXRUNTIME_NODE_INSTALL=skip npm install && node scripts/strip-ort-binaries.js",
   "buildCommand": "next build --webpack"
 }
