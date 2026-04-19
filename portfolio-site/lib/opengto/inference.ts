@@ -30,7 +30,7 @@ let loading: Promise<OrtType.InferenceSession> | null = null;
  *  - numThreads = 1 avoids needing SharedArrayBuffer / COOP+COEP, which
  *    mobile Safari is especially strict about.
  */
-async function loadOrt(): Promise<OrtModule> {
+export async function loadOrt(): Promise<OrtModule> {
   if (ort) return ort;
 
   // Build the URL at runtime so TypeScript doesn't try to resolve it as a

@@ -47,6 +47,8 @@ export default function OpenGTOPage() {
   const [modelLoaded, setModelLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadStep, setLoadStep] = useState<string>("starting…");
+  const [mountCount, setMountCount] = useState(0);
 
   // Trainer state
   const [scenario, setScenario] = useState<Scenario | null>(null);
@@ -70,6 +72,7 @@ export default function OpenGTOPage() {
 
   useEffect(() => {
     let cancelled = false;
+    setMountCount((n) => n + 1);
 
     async function load() {
       // Simulate progress ticks while the model downloads
@@ -83,12 +86,28 @@ export default function OpenGTOPage() {
         }
       }, 100);
 
+      // Watchdog: if any single step takes > 20s without resolving or
+      // throwing, surface that so we can see WHERE it's hanging (as
+      // opposed to a silent hang with no feedback).
+      let watchdogStep = "starting…";
+      const watchdog = setTimeout(() => {
+        if (!cancelled) {
+          setLoadError(
+            `Timed out after 20s during step: "${watchdogStep}".\n` +
+              `UA: ${typeof navigator !== "undefined" ? navigator.userAgent : "unknown"}`
+          );
+        }
+      }, 20_000);
+
       try {
-        await preloadModel();
+        await preloadModel((step) => {
+          watchdogStep = step;
+          if (!cancelled) setLoadStep(step);
+        });
         if (!cancelled) {
           clearInterval(interval);
+          clearTimeout(watchdog);
           setLoadingProgress(100);
-          // Brief delay for the progress bar to reach 100%
           setTimeout(() => {
             if (!cancelled) setModelLoaded(true);
           }, 300);
@@ -96,15 +115,13 @@ export default function OpenGTOPage() {
       } catch (err) {
         console.error("Failed to load ONNX model:", err);
         clearInterval(interval);
+        clearTimeout(watchdog);
         if (!cancelled) {
-          // Surface the real error in the UI so we can see what's failing
-          // on mobile (where the console is inaccessible). Capture name +
-          // message + stack so we can tell WASM compile errors apart from
-          // network/CSP failures.
           const e = err as Error;
           const detail = [
-            e?.name,
-            e?.message,
+            `Failed during step: "${watchdogStep}"`,
+            e?.name ? `Error: ${e.name}` : null,
+            e?.message ? `Message: ${e.message}` : null,
             typeof navigator !== "undefined" ? `UA: ${navigator.userAgent}` : null,
             e?.stack ? `Stack:\n${e.stack}` : null,
           ]
@@ -361,6 +378,15 @@ export default function OpenGTOPage() {
 
                 <p className="text-xs font-mono text-zinc-500 tabular-nums">
                   {Math.round(loadingProgress)}%
+                </p>
+
+                {/* Live step + mount debug info so mobile testers can see
+                    exactly where loading stops without needing the
+                    browser console. */}
+                <p className="text-[10px] font-mono text-zinc-400 text-center">
+                  step: <span className="text-amber-300">{loadStep}</span>
+                  <br />
+                  mounts: {mountCount}
                 </p>
 
                 {loadError && (

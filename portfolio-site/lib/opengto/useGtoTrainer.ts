@@ -19,7 +19,7 @@ import type { ActionHistoryEntry } from "./featureVector";
 import { buildFeatureVector } from "./featureVector";
 import { buildFeatureInput, buildRangeScenario } from "./scenarioGenerator";
 import { getAllHandTypes } from "./card";
-import { getGTOStrategy, getSession } from "./inference";
+import { getGTOStrategy, getSession, loadOrt } from "./inference";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -201,7 +201,17 @@ export async function getRangeStrategy(
 /**
  * Pre-load the ONNX model so that the first inference call is fast.
  * Call this early (e.g. on page mount) to trigger the download.
+ *
+ * Accepts an optional `onStep` callback so the UI can surface which stage
+ * of loading is currently running (useful for debugging silent failures on
+ * mobile, where the console is inaccessible).
  */
-export async function preloadModel(): Promise<void> {
+export async function preloadModel(
+  onStep?: (step: string) => void
+): Promise<void> {
+  onStep?.("importing ort module");
+  await loadOrt();
+  onStep?.("creating inference session");
   await getSession();
+  onStep?.("ready");
 }
