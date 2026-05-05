@@ -27,20 +27,20 @@ interface PositionConfig {
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const POSITION_COLOURS: Record<Position, string> = {
-  UTG: "#ef4444",
-  HJ: "#f97316",
-  CO: "#eab308",
-  BTN: "#22c55e",
-  SB: "#3b82f6",
-  BB: "#8b5cf6",
+  UTG: "#ff5b1f",
+  HJ: "#ff8551",
+  CO: "#d24513",
+  BTN: "#f2efe8",
+  SB: "#b8b4a8",
+  BB: "#6e6b62",
 };
 
 const ACTION_COLORS: Record<string, string> = {
-  fold: "#3b82f6",
-  check: "#22c55e",
-  call: "#22c55e",
-  raise: "#f97316",
-  allIn: "#ef4444",
+  fold: "#6e6b62",
+  check: "#b8b4a8",
+  call: "#ff8551",
+  raise: "#ff5b1f",
+  allIn: "#d24513",
 };
 
 const TABLE_POSITIONS: Record<Position, { x: number; y: number }> = {
@@ -62,10 +62,10 @@ const OPPONENT_ACTION_LABELS: Record<OpponentAction, string> = {
 };
 
 const OPPONENT_ACTION_COLOURS: Record<OpponentAction, string> = {
-  fold: "#6b7280",
-  call: "#22c55e",
-  raise: "#f97316",
-  "all-in": "#ef4444",
+  fold: "#6e6b62",
+  call: "#ff8551",
+  raise: "#ff5b1f",
+  "all-in": "#d24513",
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -124,24 +124,41 @@ function MiniTable({
   const pot = computePot(positionConfigs);
 
   return (
-    <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-zinc-950/60">
+    <div
+      className="relative w-full aspect-[4/3] overflow-hidden"
+      style={{
+        background: "rgba(7, 8, 10, 0.7)",
+        border: "1px solid rgba(242, 239, 232, 0.06)",
+      }}
+    >
       {/* Felt ellipse */}
       <div
         className="absolute inset-[12%] rounded-[50%]"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(34,197,94,0.15), rgba(22,163,74,0.06))",
-          border: "1.5px solid rgba(34,197,94,0.25)",
+            "radial-gradient(ellipse at center, rgba(255,91,31,0.10), rgba(12,14,18,0.7))",
+          border: "1px dashed rgba(255,91,31,0.32)",
         }}
       />
 
-      {/* Pot label in centre */}
+      {/* Pot label */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <span className="text-[9px] font-semibold uppercase tracking-widest text-emerald-500/70">
+          <span
+            className="font-mono text-[9px] tracking-[0.22em] uppercase"
+            style={{ color: "#6e6b62" }}
+          >
             Pot
           </span>
-          <span className="text-sm font-bold text-emerald-400">
+          <span
+            className="font-display"
+            style={{
+              color: "#ff5b1f",
+              fontSize: 14,
+              fontWeight: 500,
+              letterSpacing: "-0.02em",
+            }}
+          >
             {pot} BB
           </span>
         </div>
@@ -241,12 +258,17 @@ function StrategyBars({ strategy }: { strategy: GTOStrategy }) {
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.25 }}
-            className="flex items-center py-1.5 px-2 rounded-md"
+            className="flex items-center py-1.5 px-2"
             style={{ borderLeft: `3px solid ${colour}` }}
           >
-            <span className="text-xs text-zinc-300 flex-1">{label}</span>
             <span
-              className="text-xs font-mono font-semibold"
+              className="font-display flex-1"
+              style={{ color: "#b8b4a8", fontSize: 13 }}
+            >
+              {label}
+            </span>
+            <span
+              className="font-mono text-[12px] tabular-nums"
               style={{ color: colour }}
             >
               {pct.toFixed(1)}%
@@ -284,12 +306,17 @@ function DistributionStats({ dist }: { dist: ActionDistribution }) {
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.25 }}
-            className="flex items-center py-1.5 px-2 rounded-md"
+            className="flex items-center py-1.5 px-2"
             style={{ borderLeft: `3px solid ${colour}` }}
           >
-            <span className="text-xs text-zinc-300 flex-1">{label}</span>
             <span
-              className="text-xs font-mono font-semibold"
+              className="font-display flex-1"
+              style={{ color: "#b8b4a8", fontSize: 13 }}
+            >
+              {label}
+            </span>
+            <span
+              className="font-mono text-[12px] tabular-nums"
               style={{ color: colour }}
             >
               {pct.toFixed(1)}%
@@ -394,10 +421,16 @@ export default function RangeViewer() {
   return (
     <div className="flex flex-col gap-4 w-full">
       {/* ── Top Action Bar ─────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-end gap-4 p-3 bg-zinc-900/60 backdrop-blur-sm rounded-xl border border-zinc-800/50">
+      <div
+        className="flex flex-wrap items-end gap-4 p-3 backdrop-blur-sm"
+        style={{
+          background: "rgba(12, 14, 18, 0.7)",
+          border: "1px solid rgba(242, 239, 232, 0.14)",
+        }}
+      >
         {/* Hero position selector */}
         <div className="flex flex-col gap-1.5">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+          <span className="font-mono text-[10px] tracking-[0.22em] uppercase" style={{ color: "#6e6b62" }}>
             Your Position
           </span>
           <div className="flex items-center gap-1">
@@ -407,13 +440,16 @@ export default function RangeViewer() {
                 <button
                   key={pos}
                   onClick={() => setHeroPosition(pos)}
-                  className="px-2.5 py-1 text-xs font-bold rounded-md transition-all"
+                  data-cursor-hover
+                  className="px-2.5 py-1 font-mono text-[10px] tracking-[0.14em] uppercase transition-all"
                   style={{
-                    background: isSelected
-                      ? POSITION_COLOURS[pos]
-                      : "transparent",
-                    color: isSelected ? "#000" : POSITION_COLOURS[pos],
-                    border: `1.5px solid ${isSelected ? POSITION_COLOURS[pos] : `${POSITION_COLOURS[pos]}55`}`,
+                    background: isSelected ? "#ff5b1f" : "transparent",
+                    color: isSelected ? "#07080a" : "#b8b4a8",
+                    border: `1px solid ${
+                      isSelected
+                        ? "#ff5b1f"
+                        : "rgba(242, 239, 232, 0.14)"
+                    }`,
                   }}
                 >
                   {pos}
@@ -430,35 +466,33 @@ export default function RangeViewer() {
             <div className="w-px h-10 bg-zinc-700/60 self-center" />
 
             <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+              <span className="font-mono text-[10px] tracking-[0.22em] uppercase" style={{ color: "#6e6b62" }}>
                 Opponent Actions
               </span>
               <div className="flex items-center gap-3">
                 {positionConfigs.map((pc) => (
                   <div key={pc.position} className="flex items-center gap-1">
                     <span
-                      className="text-xs font-bold mr-0.5"
+                      className="font-mono text-[10px] tracking-[0.1em] mr-0.5"
                       style={{ color: POSITION_COLOURS[pc.position] }}
                     >
                       {pc.position}:
                     </span>
                     {OPPONENT_ACTIONS.map((action) => {
                       const isActive = pc.action === action;
+                      const colour = OPPONENT_ACTION_COLOURS[action];
                       return (
                         <button
                           key={action}
                           onClick={() => setPositionAction(pc.position, action)}
-                          className="w-6 h-6 text-[10px] font-bold rounded transition-all flex items-center justify-center"
+                          data-cursor-hover
+                          className="w-6 h-6 font-mono text-[10px] flex items-center justify-center transition-all"
                           style={{
-                            background: isActive
-                              ? OPPONENT_ACTION_COLOURS[action]
-                              : "transparent",
-                            color: isActive
-                              ? "#fff"
-                              : "rgba(255,255,255,0.35)",
+                            background: isActive ? colour : "transparent",
+                            color: isActive ? "#07080a" : "rgba(242,239,232,0.4)",
                             border: isActive
-                              ? `1.5px solid ${OPPONENT_ACTION_COLOURS[action]}`
-                              : "1.5px solid rgba(255,255,255,0.1)",
+                              ? `1px solid ${colour}`
+                              : "1px solid rgba(242,239,232,0.1)",
                           }}
                         >
                           {OPPONENT_ACTION_LABELS[action]}
@@ -479,11 +513,14 @@ export default function RangeViewer() {
         {/* Left: Range Matrix */}
         <div className="flex-1 min-w-0 relative">
           {isLoading && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-950/60 backdrop-blur-sm rounded-lg">
+            <div
+              className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-sm"
+              style={{ background: "rgba(7, 8, 10, 0.7)" }}
+            >
               <div className="flex flex-col items-center gap-2">
-                <Loader2 size={24} className="animate-spin text-amber-400" />
-                <span className="text-xs text-zinc-400">
-                  Computing range...
+                <Loader2 size={20} className="animate-spin" style={{ color: "#ff5b1f" }} />
+                <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: "#b8b4a8" }}>
+                  Computing range
                 </span>
               </div>
             </div>
@@ -498,33 +535,42 @@ export default function RangeViewer() {
         {/* Right: Side Panel */}
         <div className="w-72 shrink-0 flex flex-col gap-3">
           {/* Tab switcher */}
-          <div className="flex bg-zinc-900/60 rounded-lg p-0.5 border border-zinc-800/50">
+          <div className="flex" style={{ border: "1px solid rgba(242, 239, 232, 0.14)" }}>
             <button
               onClick={() => setSideView("overview")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                sideView === "overview"
-                  ? "bg-zinc-800 text-zinc-200"
-                  : "text-zinc-500 hover:text-zinc-400"
-              }`}
+              data-cursor-hover
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 font-mono text-[10px] tracking-[0.18em] uppercase transition-colors"
+              style={{
+                background: sideView === "overview" ? "#ff5b1f" : "transparent",
+                color: sideView === "overview" ? "#07080a" : "#b8b4a8",
+                borderRight: "1px solid rgba(242, 239, 232, 0.14)",
+              }}
             >
-              <BarChart3 size={12} />
-              Table View
+              <BarChart3 size={11} />
+              Table
             </button>
             <button
               onClick={() => setSideView("detail")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                sideView === "detail"
-                  ? "bg-zinc-800 text-zinc-200"
-                  : "text-zinc-500 hover:text-zinc-400"
-              }`}
+              data-cursor-hover
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 font-mono text-[10px] tracking-[0.18em] uppercase transition-colors"
+              style={{
+                background: sideView === "detail" ? "#ff5b1f" : "transparent",
+                color: sideView === "detail" ? "#07080a" : "#b8b4a8",
+              }}
             >
-              <Hand size={12} />
-              Hand Detail
+              <Hand size={11} />
+              Hand
             </button>
           </div>
 
           {/* Panel content */}
-          <div className="flex-1 bg-zinc-900/60 rounded-xl border border-zinc-800/50 p-4 overflow-hidden">
+          <div
+            className="flex-1 p-4 overflow-hidden"
+            style={{
+              background: "rgba(12, 14, 18, 0.7)",
+              border: "1px solid rgba(242, 239, 232, 0.14)",
+            }}
+          >
             <AnimatePresence mode="wait">
               {sideView === "overview" ? (
                 <motion.div
@@ -538,7 +584,7 @@ export default function RangeViewer() {
                   {/* Table View header */}
                   <div className="flex items-center gap-1.5">
                     <BarChart3 size={13} className="text-zinc-500" />
-                    <h3 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">
+                    <h3 className="font-mono text-[10px] tracking-[0.22em] uppercase" style={{ color: "#ff5b1f" }}>
                       Table View
                     </h3>
                   </div>
@@ -551,7 +597,7 @@ export default function RangeViewer() {
 
                   {/* Distribution stats */}
                   <div>
-                    <h3 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest mb-2">
+                    <h3 className="font-mono text-[10px] tracking-[0.22em] uppercase mb-2" style={{ color: "#ff5b1f" }}>
                       Action Distribution
                     </h3>
                     <DistributionStats dist={distribution} />
@@ -569,31 +615,44 @@ export default function RangeViewer() {
                   {selectedHand && selectedStrategy ? (
                     <>
                       <div className="flex items-center gap-2">
-                        <span className="text-xl font-bold text-white">
+                        <span
+                          className="font-display"
+                          style={{
+                            color: "#f2efe8",
+                            fontSize: 22,
+                            fontWeight: 500,
+                            letterSpacing: "-0.02em",
+                          }}
+                        >
                           {selectedHand}
                         </span>
-                        <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium">
+                        <span
+                          className="font-mono text-[10px] tracking-[0.18em] uppercase"
+                          style={{ color: "#6e6b62" }}
+                        >
                           {selectedHand.length === 2
                             ? "Pair"
                             : selectedHand.endsWith("s")
-                              ? "Suited"
-                              : "Offsuit"}
+                            ? "Suited"
+                            : "Offsuit"}
                         </span>
                       </div>
 
                       <div>
-                        <h3 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest mb-2">
+                        <h3 className="font-mono text-[10px] tracking-[0.22em] uppercase mb-2" style={{ color: "#ff5b1f" }}>
                           Strategy Breakdown
                         </h3>
                         <StrategyBars strategy={selectedStrategy} />
                       </div>
                     </>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-8 text-zinc-600">
-                      <Hand size={32} className="mb-2 opacity-40" />
-                      <p className="text-xs text-center">
-                        Select a hand from the matrix to see its strategy
-                        breakdown.
+                    <div className="flex flex-col items-center justify-center py-8" style={{ color: "#3a3d39" }}>
+                      <Hand size={28} className="mb-2 opacity-40" />
+                      <p
+                        className="text-center font-mono text-[10px] tracking-[0.18em] uppercase"
+                        style={{ color: "#6e6b62" }}
+                      >
+                        Select a hand
                       </p>
                     </div>
                   )}

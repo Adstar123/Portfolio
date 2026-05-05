@@ -1,51 +1,63 @@
 import type { Metadata } from "next";
-import { DM_Sans, Playfair_Display, JetBrains_Mono } from "next/font/google";
+import {
+  Space_Grotesk,
+  Instrument_Serif,
+  JetBrains_Mono,
+} from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
-const dmSans = DM_Sans({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
+  display: "swap",
 });
 
-const playfairDisplay = Playfair_Display({
+const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
+  display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains",
+  weight: ["300", "400", "500"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Adam Jarick | Software Engineer",
+  title: "Adam Jarick · Software Engineer",
   description:
-    "Software Engineer specialising in AI, full-stack development, and cloud infrastructure. Based in Sydney, Australia.",
+    "Adam Jarick. Software Engineer in Sydney. Currently building software for the Building Commission at the NSW Department of Customer Service.",
   keywords: [
     "Software Engineer",
-    "Full Stack Developer",
     "AI Engineer",
+    "Full Stack Developer",
     "Sydney",
+    "NSW Department of Customer Service",
+    "Building Commission",
     "React",
     "TypeScript",
     "Python",
-    "Portfolio",
+    "PyTorch",
   ],
   authors: [{ name: "Adam Jarick" }],
   creator: "Adam Jarick",
   openGraph: {
-    title: "Adam Jarick | Software Engineer",
+    title: "Adam Jarick · Software Engineer",
     description:
-      "Software Engineer specialising in AI, full-stack development, and cloud infrastructure.",
+      "Software Engineer in Sydney, currently building for the Building Commission at the NSW Department of Customer Service.",
     type: "website",
     locale: "en_AU",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Adam Jarick | Software Engineer",
-    description:
-      "Software Engineer specialising in AI, full-stack development, and cloud infrastructure.",
+    title: "Adam Jarick · Software Engineer",
+    description: "Software Engineer building for the Building Commission at NSW DCS.",
   },
   robots: {
     index: true,
@@ -61,9 +73,9 @@ export default function RootLayout({
   return (
     <html
       lang="en-AU"
-      className={`${dmSans.variable} ${playfairDisplay.variable} ${jetbrainsMono.variable}`}
+      className={`${spaceGrotesk.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="font-body antialiased">
+      <body className="font-display antialiased">
         {children}
         <Analytics />
       </body>

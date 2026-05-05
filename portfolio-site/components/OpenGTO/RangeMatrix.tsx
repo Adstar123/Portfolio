@@ -18,11 +18,11 @@ interface RangeMatrixProps {
 const RANKS = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"];
 
 const ACTION_COLORS: Record<string, string> = {
-  fold: "#3b82f6",
-  check: "#22c55e",
-  call: "#22c55e",
-  raise: "#f97316",
-  allIn: "#ef4444",
+  fold: "#1c1f23",
+  check: "#3a3d39",
+  call: "#ff8551",
+  raise: "#ff5b1f",
+  allIn: "#d24513",
 };
 
 const LEGEND_ITEMS = [
@@ -91,9 +91,10 @@ export default function RangeMatrix({
     <div className="flex flex-col gap-3">
       {/* Matrix grid */}
       <div
-        className="grid gap-[1px] bg-zinc-800/50 rounded-lg overflow-hidden"
+        className="grid gap-[1px] overflow-hidden"
         style={{
           gridTemplateColumns: `repeat(13, 1fr)`,
+          background: "rgba(242, 239, 232, 0.06)",
         }}
       >
         {cells.map(({ handType, isPair, background }) => {
@@ -103,6 +104,7 @@ export default function RangeMatrix({
             <motion.button
               key={handType}
               onClick={() => onHandSelect(handType)}
+              data-cursor-hover
               whileHover={{ scale: 1.12, zIndex: 10 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -111,17 +113,18 @@ export default function RangeMatrix({
                 background,
                 fontSize: "clamp(8px, 1.2vw, 12px)",
                 boxShadow: isSelected
-                  ? "inset 0 0 0 2px #fbbf24, 0 0 8px rgba(251,191,36,0.5)"
+                  ? "inset 0 0 0 2px #ff5b1f, 0 0 8px rgba(255,91,31,0.55)"
                   : isPair
-                    ? "inset 0 0 0 1px rgba(255,255,255,0.15)"
-                    : "none",
+                  ? "inset 0 0 0 1px rgba(242,239,232,0.18)"
+                  : "none",
               }}
             >
               <span
-                className="font-semibold leading-none select-none"
+                className="font-mono leading-none select-none"
                 style={{
-                  color: "#fff",
-                  textShadow: "0 1px 3px rgba(0,0,0,0.7)",
+                  color: "#f2efe8",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                  fontWeight: 500,
                 }}
               >
                 {handType}
@@ -132,14 +135,25 @@ export default function RangeMatrix({
       </div>
 
       {/* Legend bar */}
-      <div className="flex items-center justify-center gap-4 text-xs text-zinc-400">
+      <div className="flex items-center justify-center gap-4 flex-wrap">
         {LEGEND_ITEMS.map(({ label, colour }) => (
           <div key={label} className="flex items-center gap-1.5">
             <span
-              className="inline-block w-3 h-3 rounded-sm"
-              style={{ background: colour }}
+              className="inline-block w-3 h-3"
+              style={{
+                background: colour,
+                border:
+                  colour === "#1c1f23"
+                    ? "1px solid rgba(242, 239, 232, 0.18)"
+                    : "none",
+              }}
             />
-            <span>{label}</span>
+            <span
+              className="font-mono text-[10px] tracking-[0.18em] uppercase"
+              style={{ color: "#b8b4a8" }}
+            >
+              {label}
+            </span>
           </div>
         ))}
       </div>

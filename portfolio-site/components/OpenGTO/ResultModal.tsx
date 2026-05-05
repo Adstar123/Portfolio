@@ -22,11 +22,11 @@ const STRATEGY_LABELS: Record<StrategyKey, string> = {
 };
 
 const STRATEGY_COLOURS: Record<StrategyKey, string> = {
-  fold: "#ff453a",
-  check: "#32d74b",
-  call: "#0a84ff",
-  raise: "#ff9f0a",
-  allIn: "#ff375f",
+  fold: "#6e6b62",
+  check: "#b8b4a8",
+  call: "#ff8551",
+  raise: "#ff5b1f",
+  allIn: "#d24513",
 };
 
 /** Map UIActionType to the matching GTOStrategy key for display comparison. */
@@ -78,7 +78,12 @@ const ResultModal: React.FC<ResultModalProps> = ({
 
         {/* Modal content */}
         <motion.div
-          className="relative z-10 w-full max-w-md rounded-2xl bg-zinc-900/95 border border-white/[0.08] p-6 shadow-2xl"
+          className="relative z-10 w-full max-w-md p-6"
+          style={{
+            background: "rgba(12, 14, 18, 0.96)",
+            border: "1px solid rgba(242, 239, 232, 0.14)",
+            boxShadow: "0 30px 80px rgba(0,0,0,0.7)",
+          }}
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -88,9 +93,15 @@ const ResultModal: React.FC<ResultModalProps> = ({
           {/* Result header */}
           <div className="flex flex-col items-center gap-2 mb-5">
             <motion.div
-              className={`flex items-center justify-center w-14 h-14 rounded-full ${
-                isCorrect ? "bg-green-500/15" : "bg-red-500/15"
-              }`}
+              className="flex items-center justify-center w-12 h-12"
+              style={{
+                background: isCorrect
+                  ? "rgba(255, 91, 31, 0.15)"
+                  : "rgba(224, 102, 79, 0.15)",
+                border: isCorrect
+                  ? "1px solid rgba(255, 91, 31, 0.5)"
+                  : "1px solid rgba(224, 102, 79, 0.5)",
+              }}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{
@@ -101,44 +112,64 @@ const ResultModal: React.FC<ResultModalProps> = ({
               }}
             >
               {isCorrect ? (
-                <Check size={28} className="text-green-400" />
+                <Check size={22} style={{ color: "#ff5b1f" }} />
               ) : (
-                <X size={28} className="text-red-400" />
+                <X size={22} style={{ color: "#e0664f" }} />
               )}
             </motion.div>
 
             <h2
-              className={`text-xl font-bold ${
-                isCorrect ? "text-green-400" : "text-red-400"
-              }`}
+              className="font-mono text-[12px] tracking-[0.22em] uppercase"
+              style={{ color: isCorrect ? "#ff5b1f" : "#e0664f" }}
             >
-              {isCorrect ? "Correct" : "Incorrect"}
+              {isCorrect ? "Correct" : "Off-strategy"}
             </h2>
 
-            <p className="text-sm text-zinc-400 text-center leading-relaxed">
+            <p
+              className="text-center leading-relaxed"
+              style={{ fontSize: 13, color: "#b8b4a8" }}
+            >
               {feedback}
             </p>
           </div>
 
           {/* Your Action vs GTO Recommends */}
           <div className="grid grid-cols-2 gap-3 mb-5">
-            <div className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl bg-zinc-800/60 border border-white/5">
-              <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
+            <div
+              className="flex flex-col items-center gap-1 px-3 py-2.5"
+              style={{
+                background: "rgba(7, 8, 10, 0.7)",
+                border: "1px solid rgba(242, 239, 232, 0.06)",
+              }}
+            >
+              <span
+                className="font-mono text-[9px] tracking-[0.2em] uppercase"
+                style={{ color: "#6e6b62" }}
+              >
                 Your Action
               </span>
               <span
-                className="text-sm font-bold"
+                className="font-mono text-[12px] tracking-[0.16em] uppercase"
                 style={{ color: STRATEGY_COLOURS[userStrategyKey] }}
               >
                 {STRATEGY_LABELS[userStrategyKey]}
               </span>
             </div>
-            <div className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl bg-zinc-800/60 border border-white/5">
-              <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
+            <div
+              className="flex flex-col items-center gap-1 px-3 py-2.5"
+              style={{
+                background: "rgba(7, 8, 10, 0.7)",
+                border: "1px solid rgba(242, 239, 232, 0.06)",
+              }}
+            >
+              <span
+                className="font-mono text-[9px] tracking-[0.2em] uppercase"
+                style={{ color: "#6e6b62" }}
+              >
                 GTO Recommends
               </span>
               <span
-                className="text-sm font-bold"
+                className="font-mono text-[12px] tracking-[0.16em] uppercase"
                 style={{ color: STRATEGY_COLOURS[gtoRecommendation] }}
               >
                 {STRATEGY_LABELS[gtoRecommendation]}
@@ -148,7 +179,10 @@ const ResultModal: React.FC<ResultModalProps> = ({
 
           {/* GTO Strategy breakdown bars */}
           <div className="mb-5">
-            <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">
+            <h4
+              className="font-mono text-[10px] tracking-[0.22em] uppercase mb-3"
+              style={{ color: "#ff5b1f" }}
+            >
               GTO Strategy
             </h4>
             <div className="flex flex-col gap-2">
@@ -170,15 +204,18 @@ const ResultModal: React.FC<ResultModalProps> = ({
                       delay: 0.15 + index * 0.06,
                     }}
                   >
-                    {/* Label */}
-                    <span className="text-xs font-medium text-zinc-300 w-12 text-right">
+                    <span
+                      className="font-mono text-[11px] tracking-[0.1em] w-12 text-right"
+                      style={{ color: "#b8b4a8" }}
+                    >
                       {STRATEGY_LABELS[key]}
                     </span>
-
-                    {/* Bar container */}
-                    <div className="flex-1 h-5 rounded-full bg-zinc-800/80 overflow-hidden">
+                    <div
+                      className="flex-1 h-2"
+                      style={{ background: "rgba(242, 239, 232, 0.06)" }}
+                    >
                       <motion.div
-                        className="h-full rounded-full"
+                        className="h-full"
                         style={{ backgroundColor: colour }}
                         initial={{ width: 0 }}
                         animate={{ width: `${percentage}%` }}
@@ -190,10 +227,8 @@ const ResultModal: React.FC<ResultModalProps> = ({
                         }}
                       />
                     </div>
-
-                    {/* Percentage */}
                     <span
-                      className="text-xs font-bold font-mono w-10 text-right tabular-nums"
+                      className="font-mono text-[11px] w-10 text-right tabular-nums"
                       style={{ color: colour }}
                     >
                       {percentage}%
@@ -204,19 +239,21 @@ const ResultModal: React.FC<ResultModalProps> = ({
             </div>
           </div>
 
-          {/* Next Hand button */}
           <motion.button
             type="button"
             onClick={onNext}
-            className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-zinc-900 cursor-pointer"
+            data-cursor-hover
+            className="w-full flex items-center justify-center gap-3 px-5 py-3.5 font-mono text-[11px] tracking-[0.22em] uppercase cursor-pointer"
             style={{
-              background: "linear-gradient(135deg, #f59e0b, #f97316)",
+              background: "#ff5b1f",
+              color: "#07080a",
+              border: "1px solid #ff5b1f",
             }}
-            whileHover={{ scale: 1.02, y: -1 }}
+            whileHover={{ y: -1 }}
             whileTap={{ scale: 0.97 }}
           >
             Next Hand
-            <ArrowRight size={16} />
+            <ArrowRight size={14} />
           </motion.button>
         </motion.div>
       </motion.div>

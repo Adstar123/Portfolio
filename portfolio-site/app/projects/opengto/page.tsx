@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Github, Brain } from "lucide-react";
+import { Github, ArrowUpRight } from "lucide-react";
 
 import PokerTable from "@/components/OpenGTO/PokerTable";
 import ActionPanel from "@/components/OpenGTO/ActionPanel";
@@ -19,19 +19,17 @@ import type {
   UIActionType,
 } from "@/lib/opengto/types";
 
-// ─── Tech badges ─────────────────────────────────────────────────────────────
+// ─── Constants ───────────────────────────────────────────────────────────────
 
 const TECH_STACK = [
-  { label: "Python", colour: "#3776ab" },
-  { label: "PyTorch", colour: "#ee4c2c" },
-  { label: "Flask", colour: "#ffffff" },
-  { label: "React", colour: "#61dafb" },
-  { label: "TypeScript", colour: "#3178c6" },
-  { label: "ONNX", colour: "#005CED" },
-  { label: "Tailwind CSS", colour: "#38bdf8" },
+  "Python",
+  "PyTorch",
+  "Flask",
+  "React",
+  "TypeScript",
+  "ONNX",
+  "Tailwind",
 ];
-
-// ─── Tab types ───────────────────────────────────────────────────────────────
 
 type Tab = "trainer" | "range";
 
@@ -40,24 +38,20 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "range", label: "Range Viewer" },
 ];
 
-// ─── Page component ──────────────────────────────────────────────────────────
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function OpenGTOPage() {
-  // Model loading state
   const [modelLoaded, setModelLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [loadStep, setLoadStep] = useState<string>("starting…");
-  const [mountCount, setMountCount] = useState(0);
+  const [loadStep, setLoadStep] = useState<string>("starting");
 
-  // Trainer state
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [result, setResult] = useState<TrainerResult | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("trainer");
 
-  // Stats
   const [stats, setStats] = useState<UserStats>({
     totalHands: 0,
     correctDecisions: 0,
@@ -65,37 +59,25 @@ export default function OpenGTOPage() {
     sessionStart: new Date().toISOString(),
   });
 
-  // Refs
   const hasStartedRef = useRef(false);
 
-  // ── Model preloading ────────────────────────────────────────────────────
-
+  // Model preloading
   useEffect(() => {
     let cancelled = false;
-    setMountCount((n) => n + 1);
-
     async function load() {
-      // Simulate progress ticks while the model downloads
       const interval = setInterval(() => {
         if (!cancelled) {
           setLoadingProgress((prev) => {
-            // Approach 90% asymptotically while loading
             if (prev >= 90) return prev;
             return prev + (90 - prev) * 0.08;
           });
         }
       }, 100);
 
-      // Watchdog: if any single step takes > 20s without resolving or
-      // throwing, surface that so we can see WHERE it's hanging (as
-      // opposed to a silent hang with no feedback).
-      let watchdogStep = "starting…";
+      let watchdogStep = "starting";
       const watchdog = setTimeout(() => {
         if (!cancelled) {
-          setLoadError(
-            `Timed out after 20s during step: "${watchdogStep}".\n` +
-              `UA: ${typeof navigator !== "undefined" ? navigator.userAgent : "unknown"}`
-          );
+          setLoadError(`Timed out during step: "${watchdogStep}"`);
         }
       }, 20_000);
 
@@ -113,46 +95,28 @@ export default function OpenGTOPage() {
           }, 300);
         }
       } catch (err) {
-        console.error("Failed to load ONNX model:", err);
         clearInterval(interval);
         clearTimeout(watchdog);
         if (!cancelled) {
           const e = err as Error;
-          const detail = [
-            `Failed during step: "${watchdogStep}"`,
-            e?.name ? `Error: ${e.name}` : null,
-            e?.message ? `Message: ${e.message}` : null,
-            typeof navigator !== "undefined" ? `UA: ${navigator.userAgent}` : null,
-            e?.stack ? `Stack:\n${e.stack}` : null,
-          ]
-            .filter(Boolean)
-            .join("\n");
-          setLoadError(detail || String(err));
+          setLoadError(e?.message || String(err));
         }
       }
     }
-
     load();
     return () => {
       cancelled = true;
     };
   }, []);
 
-  // ── Start new hand ──────────────────────────────────────────────────────
-
   const startNewHand = useCallback(() => {
     setIsAnimating(true);
     setResult(null);
     setShowResult(false);
-
     const newScenario = generateRandomScenario();
     setScenario(newScenario);
-
-    // Allow animation time for cards to deal
     setTimeout(() => setIsAnimating(false), 600);
   }, []);
-
-  // ── Auto-start first hand when model loads ──────────────────────────────
 
   useEffect(() => {
     if (modelLoaded && !hasStartedRef.current) {
@@ -161,23 +125,16 @@ export default function OpenGTOPage() {
     }
   }, [modelLoaded, startNewHand]);
 
-  // ── Handle user action ──────────────────────────────────────────────────
-
   const handleAction = useCallback(
     async (action: UIActionType) => {
       if (!scenario || isAnimating || showResult) return;
-
       setIsAnimating(true);
-
       try {
         const trainerResult = await evaluateAction(scenario, action);
         setResult(trainerResult);
-
-        // Update stats
         setStats((prev) => {
           const total = prev.totalHands + 1;
-          const correct =
-            prev.correctDecisions + (trainerResult.isCorrect ? 1 : 0);
+          const correct = prev.correctDecisions + (trainerResult.isCorrect ? 1 : 0);
           return {
             ...prev,
             totalHands: total,
@@ -185,7 +142,6 @@ export default function OpenGTOPage() {
             accuracy: total > 0 ? (correct / total) * 100 : 0,
           };
         });
-
         setShowResult(true);
       } catch (err) {
         console.error("Failed to evaluate action:", err);
@@ -196,15 +152,11 @@ export default function OpenGTOPage() {
     [scenario, isAnimating, showResult]
   );
 
-  // ── Handle next hand ────────────────────────────────────────────────────
-
   const handleNextHand = useCallback(() => {
     setShowResult(false);
     setResult(null);
     startNewHand();
   }, [startNewHand]);
-
-  // ── Handle result close ─────────────────────────────────────────────────
 
   const handleResultClose = useCallback(() => {
     setShowResult(false);
@@ -214,190 +166,152 @@ export default function OpenGTOPage() {
 
   return (
     <div className="min-h-screen">
-      {/* ── Hero Section ──────────────────────────────────────────────── */}
-      <section className="relative px-6 pt-12 pb-10">
-        {/* Background gradient effects — fades out smoothly via mask */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            maskImage:
-              "linear-gradient(to bottom, black 0%, black 40%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(to bottom, black 0%, black 40%, transparent 100%)",
-          }}
-        >
-          <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px]"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, rgba(245,158,11,0.08) 0%, rgba(217,119,6,0.04) 40%, transparent 70%)",
-            }}
-          />
-        </div>
-
-        <div className="relative max-w-4xl mx-auto text-center">
-          {/* Title */}
-          <motion.h1
-            className="font-display uppercase tracking-[0.12em] text-5xl sm:text-6xl md:text-7xl font-normal mb-4"
+      {/* Hero */}
+      <section className="relative px-[var(--pad,32px)] pt-12 pb-12">
+        <div className="max-w-[1280px] mx-auto">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 25 }}
+            transition={{ duration: 0.7 }}
+            className="grid grid-cols-12 gap-x-8 mb-10 pb-8 border-b"
+            style={{ borderColor: "rgba(242, 239, 232, 0.14)" }}
           >
-            <span
-              className="bg-clip-text text-transparent"
-              style={{
-                backgroundImage:
-                  "linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ea580c 100%)",
-              }}
-            >
-              OpenGTO
-            </span>
-          </motion.h1>
-
-          {/* Tagline */}
-          <motion.p
-            className="text-lg sm:text-xl text-zinc-400 font-medium mb-4"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 25 }}
-          >
-            Game Theory Optimal Poker Trainer
-          </motion.p>
-
-          {/* Description */}
-          <motion.p
-            className="text-sm sm:text-base text-zinc-500 max-w-2xl mx-auto mb-6 leading-relaxed"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, type: "spring", stiffness: 200, damping: 25 }}
-          >
-            A neural network trained on millions of poker hands to approximate game
-            theory optimal play. The model runs entirely in your browser via ONNX
-            Runtime, providing instant GTO strategy analysis for any preflop
-            situation in 6-max No Limit Hold&apos;em.
-          </motion.p>
-          <motion.p
-            className="text-xs text-zinc-600 max-w-2xl mx-auto mb-6 italic"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            This is a simplified web rebuild and may not accurately reflect the
-            full desktop experience. For the complete version, download OpenGTO
-            from GitHub.
-          </motion.p>
-
-          {/* Tech badges */}
-          <motion.div
-            className="flex flex-wrap items-center justify-center gap-2 mb-6"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 25 }}
-          >
-            {TECH_STACK.map((tech) => (
+            <div className="col-span-12 md:col-span-2 mb-4 md:mb-0">
               <span
-                key={tech.label}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border"
+                className="font-mono text-[11px] tracking-[0.22em] uppercase"
+                style={{ color: "#ff5b1f" }}
+              >
+                PRJ / 01
+              </span>
+            </div>
+            <div className="col-span-12 md:col-span-7">
+              <h1
+                className="font-display"
                 style={{
-                  color: tech.colour,
-                  borderColor: `${tech.colour}33`,
-                  backgroundColor: `${tech.colour}0d`,
+                  fontSize: "clamp(48px, 7vw, 100px)",
+                  fontWeight: 500,
+                  lineHeight: 0.95,
+                  letterSpacing: "-0.04em",
+                  color: "#f2efe8",
                 }}
               >
-                {tech.label}
-              </span>
-            ))}
-          </motion.div>
-
-          {/* GitHub link */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, type: "spring", stiffness: 200, damping: 25 }}
-          >
-            <a
-              href="https://github.com/Adstar123/OpenGTO"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-zinc-300 bg-zinc-800/80 border border-white/10 hover:border-white/20 hover:text-white transition-colors"
-            >
-              <Github size={16} />
-              View on GitHub
-            </a>
+                Open
+                <span
+                  className="font-serif italic"
+                  style={{ color: "#ff5b1f", fontWeight: 400 }}
+                >
+                  GTO
+                </span>
+                .
+              </h1>
+              <p
+                className="font-serif italic mt-3"
+                style={{
+                  fontSize: "clamp(18px, 1.6vw, 22px)",
+                  color: "#b8b4a8",
+                  maxWidth: "32ch",
+                }}
+              >
+                Game Theory Optimal poker preflop trainer. Neural network
+                converging toward Nash equilibrium across 169 starting hands.
+              </p>
+              <p
+                className="mt-4 max-w-[60ch]"
+                style={{
+                  fontSize: 14,
+                  lineHeight: 1.65,
+                  color: "#b8b4a8",
+                }}
+              >
+                A Deep CFR neural network trained on millions of self-played
+                preflop spots, served via ONNX Runtime so inference happens in
+                the browser. Note: this web rebuild is a simplified version.
+                For the full experience, grab the desktop build from GitHub.
+              </p>
+            </div>
+            <div className="col-span-12 md:col-span-3 flex flex-col gap-4 md:items-end">
+              <a
+                href="https://github.com/Adstar123/OpenGTO"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cursor-hover
+                className="inline-flex items-center gap-2 px-5 py-3 font-mono text-[11px] tracking-[0.16em] uppercase transition-all"
+                style={{
+                  border: "1px solid rgba(242, 239, 232, 0.3)",
+                  color: "#f2efe8",
+                }}
+              >
+                <Github size={14} />
+                GitHub
+                <ArrowUpRight size={12} />
+              </a>
+              <div className="flex flex-wrap gap-1.5 md:justify-end">
+                {TECH_STACK.map((t) => (
+                  <span
+                    key={t}
+                    className="font-mono text-[10px] tracking-[0.06em] uppercase px-2 py-[3px] border"
+                    style={{
+                      borderColor: "rgba(242, 239, 232, 0.14)",
+                      color: "#b8b4a8",
+                    }}
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ── Model Loading State ───────────────────────────────────────── */}
+      {/* Loading */}
       <AnimatePresence>
         {!modelLoaded && (
           <motion.section
-            className="px-6 pb-10"
+            className="px-[var(--pad,32px)] pb-10"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.4 }}
           >
             <div className="max-w-md mx-auto">
-              <div className="flex flex-col items-center gap-4 p-6 rounded-2xl bg-zinc-900/60 border border-white/[0.06] backdrop-blur-sm">
-                {/* Animated brain icon */}
-                <motion.div
-                  className="flex items-center justify-center w-12 h-12 rounded-full bg-amber-500/10"
-                  animate={{
-                    boxShadow: [
-                      "0 0 0 0 rgba(245,158,11,0.2)",
-                      "0 0 0 12px rgba(245,158,11,0)",
-                    ],
-                  }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+              <div
+                className="flex flex-col items-center gap-4 p-6"
+                style={{
+                  background: "rgba(12, 14, 18, 0.7)",
+                  border: "1px solid rgba(242, 239, 232, 0.14)",
+                }}
+              >
+                <div
+                  className="font-mono text-[11px] tracking-[0.22em] uppercase"
+                  style={{ color: "#ff5b1f" }}
                 >
-                  <Brain size={24} className="text-amber-400" />
-                </motion.div>
-
-                <div className="text-center">
-                  <p className="text-sm font-semibold text-zinc-200 mb-1">
-                    Waking up neural network...
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    Connecting to inference server
-                  </p>
+                  Booting neural network
                 </div>
-
-                {/* Progress bar */}
-                <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
+                <div
+                  className="w-full h-[2px] overflow-hidden"
+                  style={{ background: "rgba(242, 239, 232, 0.06)" }}
+                >
                   <motion.div
-                    className="h-full rounded-full"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, #f59e0b, #f97316)",
-                    }}
+                    className="h-full"
+                    style={{ background: "#ff5b1f" }}
                     initial={{ width: "0%" }}
                     animate={{ width: `${loadingProgress}%` }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
                   />
                 </div>
-
-                <p className="text-xs font-mono text-zinc-500 tabular-nums">
-                  {Math.round(loadingProgress)}%
-                </p>
-
-                {/* Live step + mount debug info so mobile testers can see
-                    exactly where loading stops without needing the
-                    browser console. */}
-                <p className="text-[10px] font-mono text-zinc-400 text-center">
-                  step: <span className="text-amber-300">{loadStep}</span>
-                  <br />
-                  mounts: {mountCount}
-                </p>
-
+                <div
+                  className="font-mono text-[10px] tracking-[0.18em] uppercase"
+                  style={{ color: "#6e6b62" }}
+                >
+                  {Math.round(loadingProgress)}% · {loadStep}
+                </div>
                 {loadError && (
-                  <div className="w-full mt-2 p-3 rounded-lg bg-red-950/40 border border-red-500/30 text-left">
-                    <p className="text-xs font-semibold text-red-300 mb-1">
-                      Failed to load model
-                    </p>
-                    <pre className="text-[10px] font-mono text-red-200/90 whitespace-pre-wrap break-all leading-relaxed">
-                      {loadError}
-                    </pre>
-                  </div>
+                  <pre
+                    className="text-[10px] font-mono whitespace-pre-wrap break-all leading-relaxed mt-2"
+                    style={{ color: "#e0664f" }}
+                  >
+                    {loadError}
+                  </pre>
                 )}
               </div>
             </div>
@@ -405,27 +319,38 @@ export default function OpenGTOPage() {
         )}
       </AnimatePresence>
 
-      {/* ── Main Content (visible after model loads) ──────────────────── */}
+      {/* Main */}
       <AnimatePresence>
         {modelLoaded && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 25, delay: 0.1 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
           >
-            {/* ── Tab Bar ──────────────────────────────────────────────── */}
-            <div className="px-6 mb-8">
-              <div className="max-w-6xl mx-auto">
-                <div className="inline-flex bg-zinc-900/80 rounded-lg p-1 border border-zinc-700/60 gap-1">
+            {/* Tabs */}
+            <div className="px-[var(--pad,32px)] mb-8">
+              <div className="max-w-[1280px] mx-auto">
+                <div
+                  className="inline-flex"
+                  style={{
+                    border: "1px solid rgba(242, 239, 232, 0.14)",
+                  }}
+                >
                   {TABS.map((tab) => (
                     <button
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key)}
-                      className={`px-6 py-2 text-sm font-semibold rounded-md transition-colors ${
-                        activeTab === tab.key
-                          ? "text-amber-400 bg-amber-500/15 border border-amber-500/30"
-                          : "text-zinc-500 hover:text-zinc-300 border border-transparent"
-                      }`}
+                      data-cursor-hover
+                      className="px-6 py-3 font-mono text-[11px] tracking-[0.18em] uppercase transition-colors"
+                      style={{
+                        background:
+                          activeTab === tab.key ? "#ff5b1f" : "transparent",
+                        color: activeTab === tab.key ? "#07080a" : "#b8b4a8",
+                        borderRight:
+                          tab.key === "trainer"
+                            ? "1px solid rgba(242, 239, 232, 0.14)"
+                            : "0",
+                      }}
                     >
                       {tab.label}
                     </button>
@@ -434,16 +359,16 @@ export default function OpenGTOPage() {
               </div>
             </div>
 
-            {/* ── Tab Content ──────────────────────────────────────────── */}
-            <div className="px-6 pb-16">
+            {/* Tab content */}
+            <div className="px-[var(--pad,32px)] pb-16">
               <AnimatePresence mode="wait">
                 {activeTab === "trainer" ? (
                   <motion.div
                     key="trainer"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
                     <TrainerView
                       scenario={scenario}
@@ -459,12 +384,12 @@ export default function OpenGTOPage() {
                 ) : (
                   <motion.div
                     key="range"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <div className="max-w-6xl mx-auto">
+                    <div className="max-w-[1280px] mx-auto">
                       <RangeViewer />
                     </div>
                   </motion.div>
@@ -475,7 +400,6 @@ export default function OpenGTOPage() {
         )}
       </AnimatePresence>
 
-      {/* ── Result Modal ──────────────────────────────────────────────── */}
       <AnimatePresence>
         {showResult && result && (
           <ResultModal
@@ -489,7 +413,7 @@ export default function OpenGTOPage() {
   );
 }
 
-// ─── Trainer View (sub-component) ────────────────────────────────────────────
+// ─── Trainer View ────────────────────────────────────────────────────────────
 
 interface TrainerViewProps {
   scenario: Scenario | null;
@@ -510,24 +434,18 @@ function TrainerView({
   onAction,
 }: TrainerViewProps) {
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-[1280px] mx-auto">
       <div className="flex flex-col lg:flex-row gap-6 items-start">
-        {/* Left: Table + Actions */}
         <div className="flex-1 min-w-0 flex flex-col gap-6">
-          {/* Poker Table */}
           <div className="flex justify-center">
             <PokerTable scenario={scenario} isAnimating={isAnimating} />
           </div>
-
-          {/* Action Panel */}
           <ActionPanel
             scenario={scenario}
             onAction={onAction}
             disabled={isAnimating || showResult}
           />
         </div>
-
-        {/* Right: Stats Panel */}
         <div className="w-full lg:w-auto shrink-0">
           <StatsPanel stats={stats} />
         </div>
@@ -535,4 +453,3 @@ function TrainerView({
     </div>
   );
 }
-

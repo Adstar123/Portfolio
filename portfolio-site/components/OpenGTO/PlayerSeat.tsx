@@ -17,32 +17,36 @@ interface PlayerSeatProps {
 
 const ACTION_STYLES: Record<
   UIActionType,
-  { bg: string; border?: string; text: string; label: string }
+  { bg: string; border: string; text: string; label: string }
 > = {
   fold: {
-    bg: "bg-red-600",
-    text: "text-white",
+    bg: "rgba(7, 8, 10, 0.85)",
+    border: "1px solid rgba(242, 239, 232, 0.18)",
+    text: "#6e6b62",
     label: "FOLD",
   },
   check: {
-    bg: "bg-emerald-600",
-    text: "text-white",
+    bg: "rgba(7, 8, 10, 0.85)",
+    border: "1px solid rgba(242, 239, 232, 0.3)",
+    text: "#b8b4a8",
     label: "CHECK",
   },
   call: {
-    bg: "bg-blue-600",
-    text: "text-white",
+    bg: "rgba(7, 8, 10, 0.85)",
+    border: "1px solid rgba(255, 133, 81, 0.5)",
+    text: "#ff8551",
     label: "CALL",
   },
   raise: {
-    bg: "bg-transparent",
-    border: "border border-amber-500/70",
-    text: "text-amber-400",
+    bg: "rgba(7, 8, 10, 0.85)",
+    border: "1px solid rgba(255, 91, 31, 0.7)",
+    text: "#ff5b1f",
     label: "RAISE",
   },
   "all-in": {
-    bg: "bg-rose-600",
-    text: "text-white",
+    bg: "#ff5b1f",
+    border: "1px solid #ff5b1f",
+    text: "#07080a",
     label: "ALL-IN",
   },
 };
@@ -80,21 +84,22 @@ const PlayerSeat: React.FC<PlayerSeatProps> = ({
       >
         {/* Position badge */}
         <div
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${
-            isHero
-              ? "bg-zinc-800/90 ring-1 ring-amber-500/40"
-              : "bg-zinc-800/90 ring-1 ring-white/[0.06]"
-          }`}
+          className="flex items-center gap-1.5 px-3 py-1"
+          style={{
+            background: "rgba(7, 8, 10, 0.9)",
+            border: isHero
+              ? "1px solid rgba(255, 91, 31, 0.5)"
+              : "1px solid rgba(242, 239, 232, 0.1)",
+          }}
         >
           <CircleUser
-            size={13}
-            strokeWidth={1.8}
-            className={isHero ? "text-amber-500/80" : "text-zinc-500"}
+            size={11}
+            strokeWidth={1.6}
+            style={{ color: isHero ? "#ff5b1f" : "#6e6b62" }}
           />
           <span
-            className={`text-[11px] font-semibold tracking-wide ${
-              isHero ? "text-amber-300" : "text-zinc-300"
-            }`}
+            className="font-mono text-[10px] tracking-[0.18em] uppercase"
+            style={{ color: isHero ? "#ff5b1f" : "#b8b4a8" }}
           >
             {position}
           </span>
@@ -104,7 +109,11 @@ const PlayerSeat: React.FC<PlayerSeatProps> = ({
         <AnimatePresence mode="wait">
           {isRevealed && action && style && (
             <motion.div
-              className={`flex flex-col items-center px-3 py-1 rounded-full min-w-[52px] ${style.bg} ${style.border ?? ""}`}
+              className="flex flex-col items-center px-3 py-1 min-w-[52px]"
+              style={{
+                background: style.bg,
+                border: style.border,
+              }}
               initial={{ opacity: 0, y: 5, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -5, scale: 0.9 }}
@@ -115,17 +124,15 @@ const PlayerSeat: React.FC<PlayerSeatProps> = ({
               }}
             >
               <span
-                className={`text-[10px] font-bold tracking-wider uppercase leading-tight ${style.text}`}
+                className="font-mono text-[10px] tracking-[0.16em] uppercase leading-tight"
+                style={{ color: style.text }}
               >
                 {style.label}
               </span>
               {action.amount != null && action.action !== "fold" && (
                 <span
-                  className={`text-[10px] font-semibold font-mono tabular-nums leading-tight ${
-                    action.action === "raise"
-                      ? "text-amber-300/90"
-                      : "text-white/90"
-                  }`}
+                  className="font-mono text-[10px] tabular-nums leading-tight"
+                  style={{ color: style.text, opacity: 0.85 }}
                 >
                   {action.amount.toFixed(1)}bb
                 </span>
@@ -137,7 +144,8 @@ const PlayerSeat: React.FC<PlayerSeatProps> = ({
         {/* Hero "YOU" badge */}
         {isHero && (
           <motion.div
-            className="px-2.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-[9px] font-bold text-zinc-900 tracking-widest uppercase"
+            className="px-2.5 py-0.5 font-mono text-[9px] tracking-[0.22em] uppercase"
+            style={{ background: "#ff5b1f", color: "#07080a" }}
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{

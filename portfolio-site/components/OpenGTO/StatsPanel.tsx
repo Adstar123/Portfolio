@@ -13,9 +13,9 @@ const RING_RADIUS = 62;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 function getAccuracyColour(accuracy: number): string {
-  if (accuracy >= 70) return "#32d74b"; // green
-  if (accuracy >= 50) return "#ff9f0a"; // orange
-  return "#ff453a"; // red
+  if (accuracy >= 70) return "#ff5b1f";
+  if (accuracy >= 50) return "#ff8551";
+  return "#e0664f";
 }
 
 function getProgressMessage(accuracy: number, total: number): string {
@@ -55,65 +55,62 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats }) => {
   const statCards = [
     {
       icon: Check,
-      iconColour: "text-green-400",
-      bgAccent: "bg-green-500/10",
-      borderAccent: "border-green-500/20",
+      iconColour: "#ff5b1f",
       value: correctDecisions,
       label: "Correct",
     },
     {
       icon: Layers,
-      iconColour: "text-amber-400",
-      bgAccent: "bg-amber-500/10",
-      borderAccent: "border-amber-500/20",
+      iconColour: "#f2efe8",
       value: totalHands,
       label: "Total",
     },
     {
       icon: X,
-      iconColour: "text-red-400",
-      bgAccent: "bg-red-500/10",
-      borderAccent: "border-red-500/20",
+      iconColour: "#e0664f",
       value: mistakes,
-      label: "Mistakes",
+      label: "Off-strategy",
     },
   ];
 
   return (
-    <div className="w-[300px] rounded-2xl bg-zinc-900/80 border border-white/[0.06] p-5 backdrop-blur-sm flex flex-col">
+    <div
+      className="w-[300px] p-5 backdrop-blur-sm flex flex-col"
+      style={{
+        background: "rgba(12, 14, 18, 0.7)",
+        border: "1px solid rgba(242, 239, 232, 0.14)",
+      }}
+    >
       {/* Header */}
       <div className="flex items-center gap-2 mb-6">
-        <BarChart3 size={16} className="text-amber-500" />
-        <h3 className="text-sm font-semibold text-zinc-200 tracking-wide">
+        <BarChart3 size={14} style={{ color: "#ff5b1f" }} />
+        <h3
+          className="font-mono text-[11px] tracking-[0.22em] uppercase"
+          style={{ color: "#ff5b1f" }}
+        >
           Session Stats
         </h3>
       </div>
 
-      {/* Accuracy ring — larger */}
+      {/* Accuracy ring */}
       <div className="flex justify-center mb-6">
         <div className="relative w-[150px] h-[150px]">
-          <svg
-            viewBox="0 0 150 150"
-            className="w-full h-full -rotate-90"
-          >
-            {/* Background ring */}
+          <svg viewBox="0 0 150 150" className="w-full h-full -rotate-90">
             <circle
               cx="75"
               cy="75"
               r={RING_RADIUS}
               fill="none"
-              stroke="rgba(255,255,255,0.06)"
-              strokeWidth="10"
+              stroke="rgba(242, 239, 232, 0.08)"
+              strokeWidth="6"
             />
-
-            {/* Accuracy ring */}
             <motion.circle
               cx="75"
               cy="75"
               r={RING_RADIUS}
               fill="none"
               stroke={accuracyColour}
-              strokeWidth="10"
+              strokeWidth="6"
               strokeLinecap="round"
               strokeDasharray={RING_CIRCUMFERENCE}
               initial={{ strokeDashoffset: RING_CIRCUMFERENCE }}
@@ -126,12 +123,16 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats }) => {
               }}
             />
           </svg>
-
-          {/* Centre text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <motion.span
-              className="text-3xl font-bold font-mono tabular-nums"
-              style={{ color: accuracyColour }}
+              className="font-display tabular-nums"
+              style={{
+                color: accuracyColour,
+                fontSize: 36,
+                fontWeight: 500,
+                letterSpacing: "-0.02em",
+                lineHeight: 1,
+              }}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{
@@ -143,34 +144,57 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats }) => {
             >
               {Math.round(accuracy)}%
             </motion.span>
-            <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest mt-0.5">
+            <span
+              className="font-mono text-[9px] tracking-[0.22em] uppercase mt-1"
+              style={{ color: "#6e6b62" }}
+            >
               Accuracy
             </span>
           </div>
         </div>
       </div>
 
-      {/* Stat cards — stacked vertically */}
-      <div className="flex flex-col gap-2.5 mb-5">
+      {/* Stat cards */}
+      <div className="flex flex-col gap-2 mb-5">
         {statCards.map((card, i) => {
           const Icon = card.icon;
           return (
             <motion.div
               key={card.label}
-              className={`flex items-center gap-3 px-3.5 py-3 rounded-xl border ${card.borderAccent} ${card.bgAccent} bg-zinc-800/50`}
+              className="flex items-center gap-3 px-3 py-2.5"
+              style={{
+                background: "rgba(7, 8, 10, 0.6)",
+                border: "1px solid rgba(242, 239, 232, 0.06)",
+              }}
               variants={statCardVariants}
               initial="hidden"
               animate="visible"
               custom={i}
             >
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-800/80">
-                <Icon size={16} className={card.iconColour} />
+              <div
+                className="flex items-center justify-center w-8 h-8"
+                style={{
+                  border: "1px solid rgba(242, 239, 232, 0.06)",
+                }}
+              >
+                <Icon size={14} style={{ color: card.iconColour }} />
               </div>
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-white font-mono tabular-nums leading-tight">
+                <span
+                  className="font-display tabular-nums leading-tight"
+                  style={{
+                    color: "#f2efe8",
+                    fontWeight: 500,
+                    fontSize: 18,
+                    letterSpacing: "-0.02em",
+                  }}
+                >
                   {card.value}
                 </span>
-                <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">
+                <span
+                  className="font-mono text-[9px] tracking-[0.18em] uppercase"
+                  style={{ color: "#6e6b62" }}
+                >
                   {card.label}
                 </span>
               </div>
@@ -179,9 +203,9 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats }) => {
         })}
       </div>
 
-      {/* Progress message */}
       <motion.p
-        className="text-xs text-zinc-400 text-center mt-auto pt-2"
+        className="text-center mt-auto pt-2 font-mono text-[10px] tracking-[0.18em] uppercase"
+        style={{ color: "#b8b4a8" }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}

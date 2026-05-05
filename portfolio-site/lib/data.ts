@@ -150,6 +150,9 @@ export const skillCategories: SkillCategory[] = [
       { name: "PostgreSQL", icon: "skill-icons:postgresql-dark", iconType: "iconify" },
       { name: "SQLite", icon: "skill-icons:sqlite", iconType: "iconify" },
       { name: "MongoDB", icon: "skill-icons:mongodb", iconType: "iconify" },
+      { name: "DynamoDB", icon: "logos:aws-dynamodb", iconType: "iconify" },
+      { name: "Databricks", icon: "simple-icons:databricks", iconType: "iconify" },
+      { name: "i2 iBase", icon: "mdi:graph-outline", iconType: "iconify" },
       { name: "Prisma", icon: "skill-icons:prisma", iconType: "iconify" },
       { name: "Drizzle", icon: "simple-icons:drizzle", iconType: "iconify" },
       { name: "Redis", icon: "skill-icons:redis-dark", iconType: "iconify" },
@@ -208,11 +211,40 @@ export const socialLinks: SocialLink[] = [
 
 export const workExperience: WorkExperience[] = [
   {
+    id: "dcs",
+    company: "NSW Department of Customer Service",
+    role: "Software Engineer",
+    location: "Sydney, NSW",
+    period: "Apr 2026 → Now",
+    type: "full-time",
+    description: [
+      "Building software solutions for the Building Commission to streamline regulatory and compliance workflows for the construction sector.",
+      "Working across data pipelines, investigative tooling and case-management systems to support frontline officers and policy teams.",
+      "Full Azure stack: Azure DevOps for CI/CD, Azure Databricks for data engineering, Azure Data Factory for orchestration, and i2 iBase for intelligence analysis.",
+    ],
+    techStack: [
+      "TypeScript",
+      "Python",
+      "Azure",
+      "Azure DevOps",
+      "Azure Databricks",
+      "Azure Data Factory",
+      "DynamoDB",
+      "i2 iBase",
+    ],
+    companyIcon: "mdi:office-building-outline",
+    stats: [
+      { value: "Building", label: "commission", numericEnd: 0 },
+      { value: "Gov", label: "tier reliability", numericEnd: 0 },
+      { value: "Azure", label: "DevOps · Databricks · ADF", numericEnd: 0 },
+    ],
+  },
+  {
     id: "apate",
     company: "Apate.AI",
     role: "Software Engineer",
     location: "Town Hall, NSW",
-    period: "Oct 2024 — Present",
+    period: "Oct 2024 → Apr 2026",
     type: "full-time",
     description: [
       "Architected and deployed an enterprise-grade anti-scam WhatsApp bot, Telegram Bot and Email bot using TypeScript, WebSocket manipulation, and OpenAI GPT, processing 1,000+ messages daily across multiple client deployments.",
@@ -236,8 +268,8 @@ export const workExperience: WorkExperience[] = [
     companyIcon: "mdi:robot-outline",
     stats: [
       { value: "1,000+", label: "messages/day", numericEnd: 1000, suffix: "+" },
-      { value: "500+", label: "users handled", numericEnd: 500, suffix: "+" },
-      { value: "3", label: "cloud providers", numericEnd: 3 },
+      { value: "Enterprise", label: "client deployments", numericEnd: 0 },
+      { value: "Multi-cloud", label: "AWS · Azure · GCP", numericEnd: 0 },
     ],
   },
   {
@@ -245,7 +277,7 @@ export const workExperience: WorkExperience[] = [
     company: "Webschool.au",
     role: "AI Engineer Intern",
     location: "Macquarie, NSW",
-    period: "June 2025 — Nov 2025",
+    period: "Jun 2025 → Nov 2025",
     type: "internship",
     description: [
       "Architected and built a Voice Authentication Neural Network for a platform with the purpose of two-factor authentication, breaking down business objectives into actionable tasks using Agile methodologies.",
@@ -255,6 +287,27 @@ export const workExperience: WorkExperience[] = [
     techStack: ["Python", "PyTorch", "Azure", "Docker"],
     companyIcon: "mdi:school",
   },
+  {
+    id: "macquarie",
+    company: "Macquarie University",
+    role: "B.Sc Software Eng (Hons) & Cyber Sec",
+    location: "Sydney",
+    period: "2021 → 2025",
+    type: "full-time",
+    description: [
+      "Double degree, graduating with First Class Honours in Software Engineering alongside a Bachelor of Cyber Security.",
+      "Honours thesis: AI Co-Pilot, a Chrome extension delivering personalised learning recommendations from quiz performance and engagement signals.",
+      "Built a Deep CFR poker agent on the side that converges toward Nash equilibrium. It became the OpenGTO project.",
+    ],
+    techStack: [
+      "Algorithms",
+      "Cryptography",
+      "Networks",
+      "ML",
+      "Distributed Systems",
+    ],
+    companyIcon: "mdi:school-outline",
+  },
 ];
 
 export const bio = {
@@ -262,7 +315,7 @@ export const bio = {
   intro:
     "I'm Adam, a Software Engineer based in Sydney with a double degree in Software Engineering (Honours) and Cyber Security from Macquarie University. I build things at the intersection of AI, full-stack development, and cloud infrastructure.",
   current:
-    "Currently at Apate.AI, I architect, build and deploy anti-scam systems processing thousands of messages daily across WhatsApp, Telegram, and email through industry standard automated bots. Previously, I built voice authentication neural networks at Webschool.au.",
+    "Currently at the NSW Department of Customer Service, I'm building software solutions for the Building Commission. Previously at Apate.AI I architected and deployed anti-scam systems processing thousands of messages daily across WhatsApp, Telegram, and email, and before that I built voice authentication neural networks at Webschool.au.",
   hobby:
-    "When I'm not deploying Kubernetes clusters, I'm training poker AI to play Nash equilibrium strategies or tinkering with whatever catches my interest next.",
+    "When I'm not shipping for the Building Commission, I'm training poker AI to play Nash equilibrium strategies or tinkering with whatever catches my interest next.",
 };
