@@ -57,10 +57,10 @@ const PROJECTS: ProjectBlock[] = [
     description:
       "Honours thesis project. Reads quiz scores, engagement time, skipped lessons and link clicks from SCORM and Moodle, then surfaces personalised LLM-driven recommendations through a Chrome extension. Demonstrated lift in student engagement and module completion.",
     stats: [
-      { value: "2", label: "LMS platforms" },
-      { value: "+22%", label: "engagement" },
+      { value: "Moodle + SCORM", label: "LMS platforms" },
+      { value: "+35%", label: "engagement" },
       { value: "Honours", label: "thesis" },
-      { value: "4", label: "person team" },
+      { value: "2", label: "person team" },
     ],
     stack: [
       "JavaScript",
