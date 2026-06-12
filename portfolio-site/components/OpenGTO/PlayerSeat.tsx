@@ -84,7 +84,7 @@ const PlayerSeat: React.FC<PlayerSeatProps> = ({
       >
         {/* Position badge */}
         <div
-          className="flex items-center gap-1.5 px-3 py-1"
+          className="flex items-center gap-1.5 px-2 py-1 sm:px-3"
           style={{
             background: "rgba(7, 8, 10, 0.9)",
             border: isHero
@@ -109,7 +109,7 @@ const PlayerSeat: React.FC<PlayerSeatProps> = ({
         <AnimatePresence mode="wait">
           {isRevealed && action && style && (
             <motion.div
-              className="flex flex-col items-center px-3 py-1 min-w-[52px]"
+              className="flex flex-col items-center px-2 py-1 min-w-[44px] sm:px-3 sm:min-w-[52px]"
               style={{
                 background: style.bg,
                 border: style.border,

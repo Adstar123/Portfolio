@@ -173,7 +173,7 @@ export default function OpenGTOPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className="grid grid-cols-12 gap-x-8 mb-10 pb-8 border-b"
+            className="grid grid-cols-12 md:gap-x-8 mb-10 pb-8 border-b"
             style={{ borderColor: "rgba(242, 239, 232, 0.14)" }}
           >
             <div className="col-span-12 md:col-span-2 mb-4 md:mb-0">

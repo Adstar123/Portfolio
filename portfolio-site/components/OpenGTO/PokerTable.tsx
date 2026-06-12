@@ -24,6 +24,36 @@ const VISUAL_POSITIONS = [
   { x: 48, y: -10 }, // 5 — Right
 ];
 
+// Portrait arrangement for mobile — the table is taller than wide, the hero
+// seat sits fully on the felt, and the hero cards render below the table
+const VISUAL_POSITIONS_MOBILE = [
+  { x: 0, y: 38 }, // 0 — Hero (bottom centre, on the felt)
+  { x: -34, y: 24 }, // 1 — Bottom-left
+  { x: -38, y: -10 }, // 2 — Left
+  { x: -22, y: -38 }, // 3 — Top-left
+  { x: 22, y: -38 }, // 4 — Top-right
+  { x: 38, y: -10 }, // 5 — Right
+];
+
+/** Matches Tailwind's `sm` breakpoint — true below 640px. */
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 639px)").matches
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  return isMobile;
+}
+
 const ACTION_REVEAL_DELAY = 350; // ms between each villain reveal
 
 /**
@@ -54,6 +84,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
     new Set()
   );
   const scenarioIdRef = useRef<string>("");
+  const isMobile = useIsMobile();
 
   // Create a stable ID for the scenario to detect changes
   const getScenarioId = (s: Scenario): string => {
@@ -102,10 +133,10 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
 
   if (!scenario) {
     return (
-      <div className="relative w-full max-w-[800px] mx-auto aspect-[5/3]">
+      <div className="relative w-full max-w-[800px] mx-auto aspect-[4/5] sm:aspect-[5/3]">
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className="w-[88%] h-[78%] rounded-[50%]"
+            className="w-[86%] h-[84%] sm:w-[88%] sm:h-[78%] rounded-[50%]"
             style={{
               background:
                 "radial-gradient(ellipse at center, #0c0e12 0%, #07080a 70%)",
@@ -124,22 +155,23 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
   );
 
   return (
-    <div className="relative w-full max-w-[800px] mx-auto mb-12">
-      {/* Ambient molten glow background */}
+    <div className="relative w-full max-w-[800px] mx-auto mb-0 sm:mb-12">
+      {/* Ambient molten glow background — tighter on mobile so it stays
+          inside the viewport */}
       <div
-        className="absolute -inset-12 rounded-[50%] pointer-events-none"
+        className="absolute -inset-5 sm:-inset-12 rounded-[50%] pointer-events-none"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(255,91,31,0.10) 0%, rgba(255,91,31,0.04) 40%, transparent 70%)",
         }}
       />
 
-      {/* Table container */}
-      <div className="relative w-full aspect-[5/3]">
+      {/* Table container — portrait oval on mobile, landscape from sm up */}
+      <div className="relative w-full aspect-[4/5] sm:aspect-[5/3]">
         {/* Oval table felt — dark ink with dashed molten ring */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className="w-[88%] h-[78%] rounded-[50%] relative overflow-hidden"
+            className="w-[86%] h-[84%] sm:w-[88%] sm:h-[78%] rounded-[50%] relative overflow-hidden"
             style={{
               background:
                 "radial-gradient(ellipse at 50% 40%, rgba(255,91,31,0.06) 0%, #0c0e12 60%, #07080a 100%)",
@@ -158,11 +190,11 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
         </div>
 
         {/* Pot display — centred on table */}
-        <div className="absolute top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+        <div className="absolute top-[46%] sm:top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
           <AnimatePresence mode="wait">
             <motion.div
               key={scenario.pot}
-              className="flex flex-col items-center gap-1 px-6 py-3 backdrop-blur-sm"
+              className="flex flex-col items-center gap-1 px-4 py-2 sm:px-6 sm:py-3 backdrop-blur-sm"
               style={{
                 background: "rgba(7, 8, 10, 0.85)",
                 border: "1px solid rgba(255, 91, 31, 0.5)",
@@ -181,7 +213,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
                 POT
               </span>
               <span
-                className="font-display text-2xl tabular-nums leading-none"
+                className="font-display text-xl sm:text-2xl tabular-nums leading-none"
                 style={{ color: "#ff5b1f", fontWeight: 500 }}
               >
                 {scenario.pot.toFixed(1)} BB
@@ -192,7 +224,9 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
 
         {/* Player seats arranged around the table */}
         {rotatedPlayers.map((player, visualIndex) => {
-          const pos = VISUAL_POSITIONS[visualIndex];
+          const pos = (isMobile ? VISUAL_POSITIONS_MOBILE : VISUAL_POSITIONS)[
+            visualIndex
+          ];
           if (!pos) return null;
 
           const isHero = player.isHero;
@@ -212,8 +246,9 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
           );
         })}
 
-        {/* Hero cards — overlapping the bottom of the felt */}
-        <div className="absolute bottom-[2%] left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
+        {/* Hero cards — overlapping the bottom of the felt (sm and up only;
+            on mobile they'd cover the pot and hero seat, so they move below) */}
+        <div className="absolute bottom-[2%] left-1/2 -translate-x-1/2 z-50 hidden sm:flex flex-col items-center gap-2">
           <div className="flex gap-2">
             <PlayingCard
               card={scenario.heroCards.card1}
@@ -250,6 +285,63 @@ const PokerTable: React.FC<PokerTableProps> = ({ scenario, isAnimating }) => {
               {scenario.heroCards.handType}
             </span>
           </motion.div>
+        </div>
+      </div>
+
+      {/* Mobile hero zone — your hand lives below the felt so the pot and
+          seat badges stay visible */}
+      <div
+        className="sm:hidden mt-4 flex items-center justify-center gap-5 px-4 py-4"
+        style={{
+          background: "rgba(12, 14, 18, 0.7)",
+          border: "1px solid rgba(242, 239, 232, 0.14)",
+        }}
+      >
+        <div className="flex gap-2">
+          <PlayingCard card={scenario.heroCards.card1} index={0} isHero />
+          <PlayingCard card={scenario.heroCards.card2} index={1} isHero />
+        </div>
+        <div className="flex flex-col items-start gap-2">
+          <span
+            className="font-mono text-[10px] tracking-[0.22em] uppercase"
+            style={{ color: "#6e6b62" }}
+          >
+            Your Hand
+          </span>
+          <div
+            className="px-3 py-1"
+            style={{
+              background: "rgba(7, 8, 10, 0.9)",
+              border: "1px solid rgba(255, 91, 31, 0.4)",
+            }}
+          >
+            <span
+              className="font-mono text-[10px] tracking-[0.18em] uppercase"
+              style={{ color: "#ff5b1f" }}
+            >
+              {scenario.heroCards.handType}
+            </span>
+          </div>
+          <div
+            className="flex items-center gap-1.5 px-3 py-1"
+            style={{
+              background: "rgba(7, 8, 10, 0.9)",
+              border: "1px solid rgba(255, 91, 31, 0.5)",
+            }}
+          >
+            <span
+              className="font-mono text-[9px] tracking-[0.22em] uppercase px-1.5 py-px"
+              style={{ background: "#ff5b1f", color: "#07080a" }}
+            >
+              You
+            </span>
+            <span
+              className="font-mono text-[10px] tracking-[0.18em] uppercase"
+              style={{ color: "#ff5b1f" }}
+            >
+              {scenario.heroPosition}
+            </span>
+          </div>
         </div>
       </div>
     </div>

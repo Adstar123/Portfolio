@@ -75,7 +75,7 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats }) => {
 
   return (
     <div
-      className="w-[300px] p-5 backdrop-blur-sm flex flex-col"
+      className="w-full lg:w-[300px] p-5 backdrop-blur-sm flex flex-col"
       style={{
         background: "rgba(12, 14, 18, 0.7)",
         border: "1px solid rgba(242, 239, 232, 0.14)",

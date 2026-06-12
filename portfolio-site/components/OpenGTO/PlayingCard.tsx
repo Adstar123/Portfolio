@@ -59,11 +59,11 @@ const PlayingCard: React.FC<PlayingCardProps> = ({
       : {},
   };
 
-  // Size classes based on variant
+  // Size classes based on variant (hero cards shrink slightly on mobile)
   const sizeClasses = small
     ? "w-[38px] h-[54px]"
     : isHero
-      ? "w-[72px] h-[104px] cursor-pointer"
+      ? "w-[64px] h-[92px] sm:w-[72px] sm:h-[104px] cursor-pointer"
       : "w-16 h-[92px]";
 
   const rankSizeClass = small

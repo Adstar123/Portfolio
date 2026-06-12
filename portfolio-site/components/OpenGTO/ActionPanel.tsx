@@ -112,7 +112,7 @@ const ActionPanel: React.FC<ActionPanelProps> = ({
 
   return (
     <motion.div
-      className="w-full p-4 backdrop-blur-sm"
+      className="w-full p-3 sm:p-4 backdrop-blur-sm"
       style={{
         background: "rgba(12, 14, 18, 0.7)",
         border: "1px solid rgba(242, 239, 232, 0.14)",
@@ -146,7 +146,7 @@ const ActionPanel: React.FC<ActionPanelProps> = ({
       </div>
 
       {/* Action buttons */}
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
         {ACTION_BUTTONS.map((btn, index) => {
           const legal = isLegal(btn.action);
           const isDisabled = disabled || !scenario || !legal;
@@ -160,7 +160,7 @@ const ActionPanel: React.FC<ActionPanelProps> = ({
                 if (!isDisabled) onAction(btn.action);
               }}
               data-cursor-hover={!isDisabled}
-              className="relative flex flex-col items-center justify-center gap-2 h-20 transition-colors"
+              className="relative flex flex-col items-center justify-center gap-1.5 sm:gap-2 h-16 sm:h-20 transition-colors"
               style={{
                 background: isDisabled
                   ? "rgba(12, 14, 18, 0.4)"
@@ -206,8 +206,8 @@ const ActionPanel: React.FC<ActionPanelProps> = ({
         })}
       </div>
 
-      {/* Keyboard shortcut hints */}
-      <div className="flex items-center justify-center gap-4 mt-3 flex-wrap">
+      {/* Keyboard shortcut hints — pointless on touch screens, so sm and up only */}
+      <div className="hidden sm:flex items-center justify-center gap-4 mt-3 flex-wrap">
         {ACTION_BUTTONS.map((btn) => (
           <div key={btn.action} className="flex items-center gap-1.5">
             <kbd
