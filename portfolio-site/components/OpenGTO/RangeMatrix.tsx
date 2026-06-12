@@ -111,7 +111,7 @@ export default function RangeMatrix({
               className="relative aspect-square flex items-center justify-center cursor-pointer"
               style={{
                 background,
-                fontSize: "clamp(8px, 1.2vw, 12px)",
+                fontSize: "clamp(9px, 2.6vw, 12px)",
                 boxShadow: isSelected
                   ? "inset 0 0 0 2px #ff5b1f, 0 0 8px rgba(255,91,31,0.55)"
                   : isPair

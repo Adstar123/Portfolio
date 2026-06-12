@@ -338,6 +338,7 @@ export default function RangeViewer() {
   const [isLoading, setIsLoading] = useState(false);
   const [sideView, setSideView] = useState<"overview" | "detail">("overview");
   const computeRef = useRef(0);
+  const sidePanelRef = useRef<HTMLDivElement>(null);
 
   // Active positions = positions before hero in preflop order, excluding SB and BB
   const activePositions = useMemo(() => {
@@ -405,6 +406,20 @@ export default function RangeViewer() {
     []
   );
 
+  // Select a hand; on mobile the detail panel sits below the matrix, so
+  // bring it into view
+  const handleHandSelect = useCallback((hand: string) => {
+    setSelectedHand(hand);
+    if (window.matchMedia("(max-width: 639px)").matches) {
+      requestAnimationFrame(() => {
+        sidePanelRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      });
+    }
+  }, []);
+
   // Action distribution for overview
   const distribution = useMemo(() => computeDistribution(rangeData), [rangeData]);
 
@@ -433,7 +448,7 @@ export default function RangeViewer() {
           <span className="font-mono text-[10px] tracking-[0.22em] uppercase" style={{ color: "#6e6b62" }}>
             Your Position
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1">
             {POSITIONS.map((pos) => {
               const isSelected = heroPosition === pos;
               return (
@@ -441,7 +456,7 @@ export default function RangeViewer() {
                   key={pos}
                   onClick={() => setHeroPosition(pos)}
                   data-cursor-hover
-                  className="px-2.5 py-1 font-mono text-[10px] tracking-[0.14em] uppercase transition-all"
+                  className="px-2.5 py-2 sm:py-1 font-mono text-[10px] tracking-[0.14em] uppercase transition-all"
                   style={{
                     background: isSelected ? "#ff5b1f" : "transparent",
                     color: isSelected ? "#07080a" : "#b8b4a8",
@@ -462,14 +477,14 @@ export default function RangeViewer() {
         {/* Opponent action configurator */}
         {positionConfigs.length > 0 && (
           <>
-            {/* Divider */}
-            <div className="w-px h-10 bg-zinc-700/60 self-center" />
+            {/* Divider (hidden when the bar wraps on mobile) */}
+            <div className="hidden sm:block w-px h-10 bg-zinc-700/60 self-center" />
 
             <div className="flex flex-col gap-1.5">
               <span className="font-mono text-[10px] tracking-[0.22em] uppercase" style={{ color: "#6e6b62" }}>
                 Opponent Actions
               </span>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 {positionConfigs.map((pc) => (
                   <div key={pc.position} className="flex items-center gap-1">
                     <span
@@ -486,7 +501,7 @@ export default function RangeViewer() {
                           key={action}
                           onClick={() => setPositionAction(pc.position, action)}
                           data-cursor-hover
-                          className="w-6 h-6 font-mono text-[10px] flex items-center justify-center transition-all"
+                          className="w-8 h-8 sm:w-6 sm:h-6 font-mono text-[10px] flex items-center justify-center transition-all"
                           style={{
                             background: isActive ? colour : "transparent",
                             color: isActive ? "#07080a" : "rgba(242,239,232,0.4)",
@@ -508,8 +523,9 @@ export default function RangeViewer() {
 
       </div>
 
-      {/* ── Main Area ──────────────────────────────────────────────────── */}
-      <div className="flex gap-4 w-full">
+      {/* ── Main Area — matrix on top at full width on mobile, side-by-side
+          from sm up ──────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row gap-4 w-full">
         {/* Left: Range Matrix */}
         <div className="flex-1 min-w-0 relative">
           {isLoading && (
@@ -528,12 +544,12 @@ export default function RangeViewer() {
           <RangeMatrix
             rangeData={rangeData}
             selectedHand={selectedHand}
-            onHandSelect={setSelectedHand}
+            onHandSelect={handleHandSelect}
           />
         </div>
 
-        {/* Right: Side Panel */}
-        <div className="w-72 shrink-0 flex flex-col gap-3">
+        {/* Right: Side Panel (below the matrix on mobile) */}
+        <div ref={sidePanelRef} className="w-full sm:w-72 shrink-0 flex flex-col gap-3">
           {/* Tab switcher */}
           <div className="flex" style={{ border: "1px solid rgba(242, 239, 232, 0.14)" }}>
             <button
