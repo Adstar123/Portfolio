@@ -128,19 +128,41 @@ function buildFormations(): Formation[] {
   ];
 }
 
+// Which two formations a scroll progress value sits between, and how far
+// along (smoothstepped). Shared by the frame loop and the initial placement
+// so a freshly mounted shard starts exactly where the loop would put it.
+function blendAt(formations: Formation[], p: number) {
+  const idxA = Math.max(0, Math.min(formations.length - 1, Math.floor(p)));
+  const idxB = Math.max(0, Math.min(formations.length - 1, idxA + 1));
+  const t = THREE.MathUtils.clamp(p - idxA, 0, 1);
+  const ts = t * t * (3 - 2 * t);
+  return { fA: formations[idxA], fB: formations[idxB], ts };
+}
+
 // ─── Single shard ────────────────────────────────────────────────────────────
 
 interface ShardProps {
   index: number;
   rotationSpeed: THREE.Vector3;
   geometryType: "octahedron" | "tetrahedron" | "icosahedron" | "dodecahedron";
+  // Where the shard is created. Without this a mesh spawns at the origin at
+  // scale 1 and the first painted frame is a giant blob in the middle of the
+  // viewport that then eases (or, after a shader-compile hitch, snaps) into
+  // place.
+  initialPosition: THREE.Vector3;
+  initialScale: number;
 }
 
-function Shard({ rotationSpeed, geometryType }: ShardProps) {
+function Shard({
+  rotationSpeed,
+  geometryType,
+  initialPosition,
+  initialScale,
+}: ShardProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const edgesRef = useRef<THREE.LineSegments>(null);
-  const targetPos = useRef(new THREE.Vector3());
-  const targetScale = useRef(0.5);
+  const targetPos = useRef(initialPosition.clone());
+  const targetScale = useRef(initialScale);
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
@@ -208,7 +230,7 @@ function Shard({ rotationSpeed, geometryType }: ShardProps) {
 
   return (
     <>
-      <mesh ref={meshRef}>
+      <mesh ref={meshRef} position={initialPosition} scale={initialScale}>
         <primitive object={geometry} attach="geometry" />
         <meshPhysicalMaterial
           color="#1a0a04"
@@ -225,7 +247,11 @@ function Shard({ rotationSpeed, geometryType }: ShardProps) {
           flatShading
         />
       </mesh>
-      <lineSegments ref={edgesRef}>
+      <lineSegments
+        ref={edgesRef}
+        position={initialPosition}
+        scale={initialScale}
+      >
         <primitive object={edgeGeometry} attach="geometry" />
         <lineBasicMaterial
           color="#ff7a3d"
@@ -267,17 +293,24 @@ function Cluster({ scrollProgress, pointer }: ClusterProps) {
     }));
   }, []);
 
+  // Formation blend at mount time, so each shard is created in place rather
+  // than at the origin. On a top-of-page load this is the hero cluster.
+  const initialTransforms = useMemo(() => {
+    const { fA, fB, ts } = blendAt(formations, scrollProgress.current);
+    return Array.from({ length: SHARD_COUNT }).map((_, i) => ({
+      position: new THREE.Vector3().lerpVectors(
+        fA.positions[i],
+        fB.positions[i],
+        ts
+      ),
+      scale: THREE.MathUtils.lerp(fA.scales[i], fB.scales[i], ts),
+    }));
+  }, [formations, scrollProgress]);
+
   useFrame((state, delta) => {
     if (!groupRef.current) return;
 
-    const p = scrollProgress.current;
-    const idxA = Math.max(0, Math.min(formations.length - 1, Math.floor(p)));
-    const idxB = Math.max(0, Math.min(formations.length - 1, idxA + 1));
-    const t = THREE.MathUtils.clamp(p - idxA, 0, 1);
-    const ts = t * t * (3 - 2 * t);
-
-    const fA = formations[idxA];
-    const fB = formations[idxB];
+    const { fA, fB, ts } = blendAt(formations, scrollProgress.current);
 
     groupRef.current.children
       .filter((c) => (c as THREE.Mesh).isMesh)
@@ -324,6 +357,8 @@ function Cluster({ scrollProgress, pointer }: ClusterProps) {
           index={i}
           rotationSpeed={p.rotationSpeed}
           geometryType={p.geometryType}
+          initialPosition={initialTransforms[i].position}
+          initialScale={initialTransforms[i].scale}
         />
       ))}
     </group>
