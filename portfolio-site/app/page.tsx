@@ -14,7 +14,7 @@ import ResumeSection from "@/components/Sections/ResumeSection";
 import ContactSection from "@/components/Sections/ContactSection";
 import Footer from "@/components/Footer";
 
-const ShardScene = dynamic(() => import("@/components/Scene/ShardScene"), {
+const OilScene = dynamic(() => import("@/components/Scene/OilScene"), {
   ssr: false,
 });
 
@@ -107,7 +107,7 @@ export default function Home() {
 
       {/* Persistent Three.js scene. Mounted immediately, behind the loader,
           so its chunk, reflections and shaders are ready before the reveal. */}
-      <ShardScene onReady={handleSceneReady} />
+      <OilScene onReady={handleSceneReady} />
 
       {/* HUD chrome — fixed, always-on */}
       <HudChrome />
