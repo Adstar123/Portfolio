@@ -15,6 +15,25 @@ type Formation = {
 
 const SHARD_COUNT = 22;
 
+type ShardType = "octahedron" | "spindle" | "icosahedron" | "dodecahedron";
+const SHARD_TYPES: ShardType[] = [
+  "octahedron",
+  "spindle",
+  "icosahedron",
+  "dodecahedron",
+];
+function shardType(i: number): ShardType {
+  return SHARD_TYPES[i % SHARD_TYPES.length];
+}
+// Outer radius of each unit solid relative to its uniform scale. The spindle
+// is an octahedron stretched along y, so it reaches further than the others.
+const RADIUS_FACTOR: Record<ShardType, number> = {
+  octahedron: 1,
+  spindle: 1.35,
+  icosahedron: 1,
+  dodecahedron: 1,
+};
+
 // Stable random — seeded by index, so positions are deterministic across renders
 function rand(i: number, salt: number) {
   const x = Math.sin((i + 1) * 12.9898 + salt * 78.233) * 43758.5453;
@@ -22,21 +41,24 @@ function rand(i: number, salt: number) {
 }
 
 function buildFormations(): Formation[] {
-  // Hero: tight ragged cluster on the right
+  // Hero: ragged cluster on the right. Sizes are kept modest so individual
+  // facets stay readable and the cluster doesn't swallow the section rail.
   const heroPositions: THREE.Vector3[] = [];
   const heroScales: number[] = [];
   for (let i = 0; i < SHARD_COUNT; i++) {
-    const r = 1.0 + rand(i, 1) * 1.4;
+    const r = 1.1 + rand(i, 1) * 1.5;
     const theta = (i / SHARD_COUNT) * Math.PI * 2 + rand(i, 2) * 0.8;
     const phi = Math.acos(2 * rand(i, 3) - 1);
+    // Shallow depth range: a shard that drifts too close to the camera
+    // balloons in perspective and crops against the HUD.
     heroPositions.push(
       new THREE.Vector3(
-        2.6 + r * Math.sin(phi) * Math.cos(theta) * 1.05,
-        -0.2 + r * Math.sin(phi) * Math.sin(theta) * 0.8,
-        -0.2 + r * Math.cos(phi) * 1.3
+        2.7 + r * Math.sin(phi) * Math.cos(theta) * 1.0,
+        -0.3 + r * Math.sin(phi) * Math.sin(theta) * 0.8,
+        -0.4 + r * Math.cos(phi) * 0.95
       )
     );
-    heroScales.push(0.4 + rand(i, 4) * 0.55);
+    heroScales.push(0.28 + rand(i, 4) * 0.44);
   }
 
   // About: shards drift outward to the left edge in a vertical column
@@ -118,7 +140,7 @@ function buildFormations(): Formation[] {
     contactScales.push(0.28 + rand(i, 52) * 0.28);
   }
 
-  return [
+  const formations: Formation[] = [
     { positions: heroPositions, scales: heroScales, cameraZ: 7, groupRotY: 0 },
     { positions: aboutPositions, scales: aboutScales, cameraZ: 8, groupRotY: 0.5 },
     { positions: trackPositions, scales: trackScales, cameraZ: 8, groupRotY: 1.0 },
@@ -126,6 +148,31 @@ function buildFormations(): Formation[] {
     { positions: workPositions, scales: workScales, cameraZ: 8, groupRotY: 2.2 },
     { positions: contactPositions, scales: contactScales, cameraZ: 7, groupRotY: 2.8 },
   ];
+  for (const f of formations) separate(f.positions, f.scales);
+  return formations;
+}
+
+// Nudge overlapping shards apart so each reads as a distinct object rather
+// than a pile of interpenetrating solids. Deterministic; runs once at build.
+function separate(positions: THREE.Vector3[], scales: number[]) {
+  const d = new THREE.Vector3();
+  for (let pass = 0; pass < 48; pass++) {
+    for (let i = 0; i < positions.length; i++) {
+      for (let j = i + 1; j < positions.length; j++) {
+        d.subVectors(positions[j], positions[i]);
+        const dist = d.length();
+        // Solids are built with circumradius 1, so `scale` is the outer radius.
+        const minDist =
+          (scales[i] * RADIUS_FACTOR[shardType(i)] +
+            scales[j] * RADIUS_FACTOR[shardType(j)]) *
+          0.92;
+        if (dist >= minDist || dist < 1e-4) continue;
+        d.multiplyScalar(((minDist - dist) * 0.5) / dist);
+        positions[i].sub(d);
+        positions[j].add(d);
+      }
+    }
+  }
 }
 
 // Which two formations a scroll progress value sits between, and how far
@@ -144,13 +191,16 @@ function blendAt(formations: Formation[], p: number) {
 interface ShardProps {
   index: number;
   rotationSpeed: THREE.Vector3;
-  geometryType: "octahedron" | "tetrahedron" | "icosahedron" | "dodecahedron";
+  geometryType: ShardType;
   // Where the shard is created. Without this a mesh spawns at the origin at
   // scale 1 and the first painted frame is a giant blob in the middle of the
   // viewport that then eases (or, after a shader-compile hitch, snaps) into
   // place.
   initialPosition: THREE.Vector3;
   initialScale: number;
+  // A different starting orientation per shard, so they don't all present
+  // the same facet (and the same shading) to the camera.
+  initialRotation: [number, number, number];
 }
 
 function Shard({
@@ -158,6 +208,7 @@ function Shard({
   geometryType,
   initialPosition,
   initialScale,
+  initialRotation,
 }: ShardProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const edgesRef = useRef<THREE.LineSegments>(null);
@@ -192,72 +243,69 @@ function Shard({
     }
   }, []);
 
-  const geometry = useMemo(() => {
-    // Mild subdivision adds extra facets without losing the low-poly feel,
-    // so light catches more varied angles.
+  // Unsubdivided solids: every face is one flat plane, so each facet catches a
+  // single clean reflection instead of a smeared gradient. The outline is cut
+  // from the same solid so it sits exactly on the bevels.
+  const { geometry, edgeGeometry } = useMemo(() => {
+    let solid: THREE.BufferGeometry;
     switch (geometryType) {
-      case "tetrahedron":
-        return new THREE.TetrahedronGeometry(1, 1);
-      case "icosahedron":
-        return new THREE.IcosahedronGeometry(1, 1);
-      case "dodecahedron":
-        return new THREE.DodecahedronGeometry(1, 0);
-      default:
-        return new THREE.OctahedronGeometry(1, 1);
-    }
-  }, [geometryType]);
-
-  // Edges from a coarser version so the wireframe still reads as low-poly
-  const edgeGeometry = useMemo(() => {
-    let coarse: THREE.BufferGeometry;
-    switch (geometryType) {
-      case "tetrahedron":
-        coarse = new THREE.TetrahedronGeometry(1, 0);
+      case "spindle":
+        // Octahedron drawn out along one axis: a classic crystal splinter.
+        solid = new THREE.OctahedronGeometry(1, 0);
+        solid.scale(1, 1.7, 1);
         break;
       case "icosahedron":
-        coarse = new THREE.IcosahedronGeometry(1, 0);
+        solid = new THREE.IcosahedronGeometry(1, 0);
         break;
       case "dodecahedron":
-        coarse = new THREE.DodecahedronGeometry(1, 0);
+        solid = new THREE.DodecahedronGeometry(1, 0);
         break;
       default:
-        coarse = new THREE.OctahedronGeometry(1, 0);
+        solid = new THREE.OctahedronGeometry(1, 0);
     }
-    const eg = new THREE.EdgesGeometry(coarse);
-    coarse.dispose();
-    return eg;
+    return { geometry: solid, edgeGeometry: new THREE.EdgesGeometry(solid) };
   }, [geometryType]);
 
   return (
     <>
-      <mesh ref={meshRef} position={initialPosition} scale={initialScale}>
+      <mesh
+        ref={meshRef}
+        position={initialPosition}
+        scale={initialScale}
+        rotation={initialRotation}
+      >
         <primitive object={geometry} attach="geometry" />
+        {/*
+          Dark polished steel. A metal's reflections are tinted by its base
+          colour, so the base is a mid warm grey rather than near-black: the
+          studio environment supplies the colour (cream key, vermilion ember),
+          the metal just mirrors it.
+        */}
         <meshPhysicalMaterial
-          color="#1a0a04"
-          emissive="#ff3d10"
-          emissiveIntensity={0.04}
-          metalness={1.0}
-          roughness={0.08}
-          envMapIntensity={4.5}
+          color="#bba898"
+          metalness={0.9}
+          roughness={0.28}
+          envMapIntensity={2.0}
           clearcoat={1.0}
-          clearcoatRoughness={0.04}
-          iridescence={0.45}
-          iridescenceIOR={1.6}
-          iridescenceThicknessRange={[100, 800]}
+          clearcoatRoughness={0.14}
           flatShading
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
         />
       </mesh>
       <lineSegments
         ref={edgesRef}
         position={initialPosition}
         scale={initialScale}
+        rotation={initialRotation}
       >
         <primitive object={edgeGeometry} attach="geometry" />
         <lineBasicMaterial
-          color="#ff7a3d"
+          color="#ffd2b8"
           transparent
-          opacity={0.55}
-          linewidth={1}
+          opacity={0.3}
+          depthWrite={false}
         />
       </lineSegments>
     </>
@@ -277,19 +325,18 @@ function Cluster({ scrollProgress, pointer }: ClusterProps) {
   const { camera } = useThree();
 
   const shardProps = useMemo(() => {
-    const types: Array<"octahedron" | "tetrahedron" | "icosahedron" | "dodecahedron"> = [
-      "octahedron",
-      "tetrahedron",
-      "icosahedron",
-      "dodecahedron",
-    ];
     return Array.from({ length: SHARD_COUNT }).map((_, i) => ({
       rotationSpeed: new THREE.Vector3(
         (rand(i, 91) - 0.5) * 0.4,
         (rand(i, 92) - 0.5) * 0.4,
         (rand(i, 93) - 0.5) * 0.3
       ),
-      geometryType: types[i % 4],
+      geometryType: shardType(i),
+      initialRotation: [
+        rand(i, 94) * Math.PI * 2,
+        rand(i, 95) * Math.PI * 2,
+        rand(i, 96) * Math.PI * 2,
+      ] as [number, number, number],
     }));
   }, []);
 
@@ -359,6 +406,7 @@ function Cluster({ scrollProgress, pointer }: ClusterProps) {
           geometryType={p.geometryType}
           initialPosition={initialTransforms[i].position}
           initialScale={initialTransforms[i].scale}
+          initialRotation={p.initialRotation}
         />
       ))}
     </group>
@@ -366,14 +414,20 @@ function Cluster({ scrollProgress, pointer }: ClusterProps) {
 }
 
 // ─── Procedural environment map ──────────────────────────────────────────────
-// Builds a bright orange/cream gradient cube map at runtime so PBR metals
-// have something to reflect (avoiding the CSP-blocked HDRi fetch).
+// Renders a small "studio" cube map at runtime so the metal has something to
+// reflect (an HDRi fetch would be blocked by CSP). The studio is mostly dark
+// with a few distinct emitters, so a facet is either catching one of them
+// (a clean bright plane) or falling to near-black. That contrast is what
+// makes faceted metal read as polished rather than muddy.
 
 function ProceduralEnv() {
   const { scene, gl } = useThree();
   useEffect(() => {
     const size = 512;
     const renderTarget = new THREE.WebGLCubeRenderTarget(size, {
+      // Half-float so emitters can exceed 1.0 and survive tone mapping as
+      // genuinely hot highlights instead of clipping to flat white.
+      type: THREE.HalfFloatType,
       generateMipmaps: true,
       minFilter: THREE.LinearMipmapLinearFilter,
     });
@@ -384,32 +438,25 @@ function ProceduralEnv() {
       mat: THREE.Material;
     }> = [];
 
-    // Gradient sky dome — bright cream upper, hot orange middle, deep shadow below
-    // This is the main reflection source the metals will pick up.
+    // Dark warm dome: faint warmth above, ember tint below the horizon,
+    // black underneath.
     const domeGeo = new THREE.SphereGeometry(60, 64, 32);
     const domeColors: number[] = [];
     const domeColorAttr = domeGeo.attributes.position;
-    const top = new THREE.Color("#fff1d0");
-    const upper = new THREE.Color("#ffc26a");
-    const mid = new THREE.Color("#ff5b1f");
-    const lower = new THREE.Color("#3a0d04");
+    const top = new THREE.Color("#4a3a30");
+    const horizon = new THREE.Color("#1c1512");
+    const ember = new THREE.Color("#5a1c08");
     const bottom = new THREE.Color("#000000");
     const tmp = new THREE.Color();
     for (let i = 0; i < domeColorAttr.count; i++) {
       const y = domeColorAttr.getY(i) / 60; // -1..1
       let col: THREE.Color;
-      if (y > 0.6) {
-        const t = (y - 0.6) / 0.4;
-        col = tmp.copy(upper).lerp(top, t);
-      } else if (y > 0.0) {
-        const t = y / 0.6;
-        col = tmp.copy(mid).lerp(upper, t);
-      } else if (y > -0.5) {
-        const t = (y + 0.5) / 0.5;
-        col = tmp.copy(lower).lerp(mid, t);
+      if (y > 0) {
+        col = tmp.copy(horizon).lerp(top, y);
+      } else if (y > -0.45) {
+        col = tmp.copy(ember).lerp(horizon, (y + 0.45) / 0.45);
       } else {
-        const t = (y + 1) / 0.5;
-        col = tmp.copy(bottom).lerp(lower, t);
+        col = tmp.copy(bottom).lerp(ember, (y + 1) / 0.55);
       }
       domeColors.push(col.r, col.g, col.b);
     }
@@ -425,13 +472,14 @@ function ProceduralEnv() {
     envScene.add(new THREE.Mesh(domeGeo, domeMat));
     disposables.push({ geo: domeGeo, mat: domeMat });
 
-    // Add specific hot spots on top of the gradient
-    function addEmissiveQuad(
-      color: string,
+    // Emitters: flat panels facing the origin. `color` may exceed 1.0.
+    function addEmitter(
+      color: THREE.Color,
       pos: THREE.Vector3,
-      size: number
+      width: number,
+      height: number
     ) {
-      const geo = new THREE.PlaneGeometry(size, size);
+      const geo = new THREE.PlaneGeometry(width, height);
       const mat = new THREE.MeshBasicMaterial({
         color,
         side: THREE.DoubleSide,
@@ -444,20 +492,53 @@ function ProceduralEnv() {
       return { geo, mat };
     }
 
-    // PURE WHITE blazing key spec for the brightest highlights
+    // Key: one large cream softbox, upper-left-front. Broad bright facets.
     disposables.push(
-      addEmissiveQuad("#ffffff", new THREE.Vector3(15, 14, 8), 14)
+      addEmitter(
+        new THREE.Color(1.8, 1.7, 1.5),
+        new THREE.Vector3(-10, 14, 14),
+        28,
+        28
+      )
     );
+    // Fill: a big dim panel front-right so camera-facing facets lift to a
+    // readable warm grey instead of dropping to black.
     disposables.push(
-      addEmissiveQuad("#fff8e0", new THREE.Vector3(-10, 12, 4), 14)
+      addEmitter(
+        new THREE.Color(0.55, 0.5, 0.45),
+        new THREE.Vector3(14, 4, 16),
+        20,
+        20
+      )
     );
-    // Hot orange under-glow
+    // Rim: a tall thin white strip, right and behind. Thin hard highlights
+    // that trace the bevels and separate shards from the dark page.
     disposables.push(
-      addEmissiveQuad("#ff5b1f", new THREE.Vector3(0, -8, 6), 30)
+      addEmitter(
+        new THREE.Color(2.4, 2.3, 2.1),
+        new THREE.Vector3(18, 5, -7),
+        3.5,
+        28
+      )
     );
-    // Cool blue accent for facet break-up
+    // Ember: a wide vermilion strip low and in front, the page accent
+    // reflected on every downward-facing facet.
     disposables.push(
-      addEmissiveQuad("#284878", new THREE.Vector3(-14, 0, 8), 14)
+      addEmitter(
+        new THREE.Color(2.6, 0.85, 0.3),
+        new THREE.Vector3(4, -11, 10),
+        40,
+        9
+      )
+    );
+    // A small cool panel far left so not every reflection is warm.
+    disposables.push(
+      addEmitter(
+        new THREE.Color("#2a3648"),
+        new THREE.Vector3(-16, -2, -4),
+        8,
+        8
+      )
     );
 
     // Render the cubemap from origin
@@ -481,33 +562,27 @@ function ProceduralEnv() {
 
 // ─── Lights ──────────────────────────────────────────────────────────────────
 
+// The environment map does most of the lighting; these three just add sharp
+// specular hits that move as the group rotates. (No ambient light: a metal
+// has no diffuse term for it to affect.)
 function Lights() {
   return (
     <>
-      <ambientLight intensity={0.08} />
-      {/* Hard cream key from upper-right giving sharp specular hits */}
-      <directionalLight position={[5, 6, 4]} intensity={4.5} color="#fff2d8" />
-      {/* Hot orange rim from front-below */}
+      {/* Cream key from upper-right */}
+      <directionalLight position={[6, 8, 5]} intensity={3} color="#fff2d9" />
+      {/* Ember from below-front */}
       <pointLight
-        position={[3, -2, 4]}
-        intensity={6}
+        position={[3, -2.5, 4]}
+        intensity={5}
         color="#ff5b1f"
-        distance={11}
-        decay={1.4}
+        distance={12}
+        decay={1.6}
       />
-      {/* Sharp white spec for hot-spot facets */}
-      <pointLight
-        position={[1, 3, 6]}
-        intensity={2.5}
-        color="#ffffff"
-        distance={10}
-        decay={1.8}
-      />
-      {/* Back rim deep copper for outline glow */}
+      {/* Pale rim from behind-left for silhouette separation */}
       <directionalLight
-        position={[-2, -1, -3]}
-        intensity={1.0}
-        color="#d24513"
+        position={[-4, 2, -5]}
+        intensity={1.2}
+        color="#ffd9b8"
       />
     </>
   );
@@ -628,6 +703,8 @@ export default function ShardScene() {
         style={{ width: "100%", height: "100%" }}
       >
         <ProceduralEnv />
+        {/* Page-coloured fog: far shards sink into the background for depth */}
+        <fog attach="fog" args={["#07080a", 7, 13]} />
         <Lights />
         <Cluster scrollProgress={scrollProgress} pointer={pointer.current} />
       </Canvas>
