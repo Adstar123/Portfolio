@@ -1,7 +1,7 @@
 "use client";
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree, type RootState } from "@react-three/fiber";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 // ─── Section formations ──────────────────────────────────────────────────────
@@ -276,18 +276,22 @@ function Shard({
       >
         <primitive object={geometry} attach="geometry" />
         {/*
-          Dark polished steel. A metal's reflections are tinted by its base
-          colour, so the base is a mid warm grey rather than near-black: the
-          studio environment supplies the colour (cream key, vermilion ember),
-          the metal just mirrors it.
+          Liquid chrome with an oil-slick film. A metal's reflections are
+          tinted by its base colour, so the base is bright and only faintly
+          warm: the studio environment supplies the colour and the chrome
+          mirrors it. The thin-film iridescence adds the shifting
+          petrol-on-water tints that move with the viewing angle.
         */}
         <meshPhysicalMaterial
-          color="#bba898"
-          metalness={0.9}
-          roughness={0.28}
-          envMapIntensity={2.0}
-          clearcoat={1.0}
-          clearcoatRoughness={0.14}
+          color="#d9d2ca"
+          metalness={1}
+          roughness={0.14}
+          envMapIntensity={1.6}
+          clearcoat={1}
+          clearcoatRoughness={0.06}
+          iridescence={1}
+          iridescenceIOR={1.5}
+          iridescenceThicknessRange={[150, 450]}
           flatShading
           polygonOffset
           polygonOffsetFactor={1}
@@ -302,9 +306,9 @@ function Shard({
       >
         <primitive object={edgeGeometry} attach="geometry" />
         <lineBasicMaterial
-          color="#ffd2b8"
+          color="#ffe4d2"
           transparent
-          opacity={0.3}
+          opacity={0.2}
           depthWrite={false}
         />
       </lineSegments>
@@ -416,162 +420,177 @@ function Cluster({ scrollProgress, pointer }: ClusterProps) {
 // ─── Procedural environment map ──────────────────────────────────────────────
 // Renders a small "studio" cube map at runtime so the metal has something to
 // reflect (an HDRi fetch would be blocked by CSP). The studio is mostly dark
-// with a few distinct emitters, so a facet is either catching one of them
-// (a clean bright plane) or falling to near-black. That contrast is what
-// makes faceted metal read as polished rather than muddy.
+// with a handful of crisp emitters: broad softboxes for the big highlights and
+// thin light bars that streak across each facet as the shards turn. Chrome is
+// only ever as interesting as what it reflects.
+//
+// Built synchronously from the Canvas' onCreated, before the first frame, so
+// reflections are present from the very first paint.
 
-function ProceduralEnv() {
-  const { scene, gl } = useThree();
-  useEffect(() => {
-    const size = 512;
-    const renderTarget = new THREE.WebGLCubeRenderTarget(size, {
-      // Half-float so emitters can exceed 1.0 and survive tone mapping as
-      // genuinely hot highlights instead of clipping to flat white.
-      type: THREE.HalfFloatType,
-      generateMipmaps: true,
-      minFilter: THREE.LinearMipmapLinearFilter,
-    });
+function buildStudioEnvironment(gl: THREE.WebGLRenderer) {
+  const size = 512;
+  const renderTarget = new THREE.WebGLCubeRenderTarget(size, {
+    // Half-float so emitters can exceed 1.0 and survive tone mapping as
+    // genuinely hot highlights instead of clipping to flat white.
+    type: THREE.HalfFloatType,
+    generateMipmaps: true,
+    minFilter: THREE.LinearMipmapLinearFilter,
+  });
 
-    const envScene = new THREE.Scene();
-    const disposables: Array<{
-      geo: THREE.BufferGeometry;
-      mat: THREE.Material;
-    }> = [];
+  const envScene = new THREE.Scene();
+  const disposables: Array<{
+    geo: THREE.BufferGeometry;
+    mat: THREE.Material;
+  }> = [];
 
-    // Dark warm dome: faint warmth above, ember tint below the horizon,
-    // black underneath.
-    const domeGeo = new THREE.SphereGeometry(60, 64, 32);
-    const domeColors: number[] = [];
-    const domeColorAttr = domeGeo.attributes.position;
-    const top = new THREE.Color("#4a3a30");
-    const horizon = new THREE.Color("#1c1512");
-    const ember = new THREE.Color("#5a1c08");
-    const bottom = new THREE.Color("#000000");
-    const tmp = new THREE.Color();
-    for (let i = 0; i < domeColorAttr.count; i++) {
-      const y = domeColorAttr.getY(i) / 60; // -1..1
-      let col: THREE.Color;
-      if (y > 0) {
-        col = tmp.copy(horizon).lerp(top, y);
-      } else if (y > -0.45) {
-        col = tmp.copy(ember).lerp(horizon, (y + 0.45) / 0.45);
-      } else {
-        col = tmp.copy(bottom).lerp(ember, (y + 1) / 0.55);
-      }
-      domeColors.push(col.r, col.g, col.b);
+  // Dark warm dome: faint warmth above, ember tint below the horizon, black
+  // underneath. Kept dark so the emitters read as distinct shapes.
+  const domeGeo = new THREE.SphereGeometry(60, 64, 32);
+  const domeColors: number[] = [];
+  const domeColorAttr = domeGeo.attributes.position;
+  const top = new THREE.Color("#4a3a32");
+  const horizon = new THREE.Color("#241c18");
+  const ember = new THREE.Color("#6a2408");
+  const bottom = new THREE.Color("#0a0604");
+  const tmp = new THREE.Color();
+  for (let i = 0; i < domeColorAttr.count; i++) {
+    const y = domeColorAttr.getY(i) / 60; // -1..1
+    let col: THREE.Color;
+    if (y > 0) {
+      col = tmp.copy(horizon).lerp(top, y);
+    } else if (y > -0.45) {
+      col = tmp.copy(ember).lerp(horizon, (y + 0.45) / 0.45);
+    } else {
+      col = tmp.copy(bottom).lerp(ember, (y + 1) / 0.55);
     }
-    domeGeo.setAttribute(
-      "color",
-      new THREE.Float32BufferAttribute(domeColors, 3)
-    );
-    const domeMat = new THREE.MeshBasicMaterial({
-      vertexColors: true,
-      side: THREE.BackSide,
+    domeColors.push(col.r, col.g, col.b);
+  }
+  domeGeo.setAttribute(
+    "color",
+    new THREE.Float32BufferAttribute(domeColors, 3)
+  );
+  const domeMat = new THREE.MeshBasicMaterial({
+    vertexColors: true,
+    side: THREE.BackSide,
+    toneMapped: false,
+  });
+  envScene.add(new THREE.Mesh(domeGeo, domeMat));
+  disposables.push({ geo: domeGeo, mat: domeMat });
+
+  // Emitters: flat panels facing the origin. `color` may exceed 1.0. `roll`
+  // tilts a panel about its own facing axis, for diagonal light bars.
+  function addEmitter(
+    color: THREE.Color,
+    pos: THREE.Vector3,
+    width: number,
+    height: number,
+    roll = 0
+  ) {
+    const geo = new THREE.PlaneGeometry(width, height);
+    const mat = new THREE.MeshBasicMaterial({
+      color,
+      side: THREE.DoubleSide,
       toneMapped: false,
     });
-    envScene.add(new THREE.Mesh(domeGeo, domeMat));
-    disposables.push({ geo: domeGeo, mat: domeMat });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.copy(pos);
+    mesh.lookAt(0, 0, 0);
+    if (roll) mesh.rotateZ(roll);
+    envScene.add(mesh);
+    disposables.push({ geo, mat });
+  }
 
-    // Emitters: flat panels facing the origin. `color` may exceed 1.0.
-    function addEmitter(
-      color: THREE.Color,
-      pos: THREE.Vector3,
-      width: number,
-      height: number
-    ) {
-      const geo = new THREE.PlaneGeometry(width, height);
-      const mat = new THREE.MeshBasicMaterial({
-        color,
-        side: THREE.DoubleSide,
-        toneMapped: false,
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.copy(pos);
-      mesh.lookAt(0, 0, 0);
-      envScene.add(mesh);
-      return { geo, mat };
-    }
+  // Key: one large cream softbox, upper-left-front. Broad bright facets.
+  addEmitter(
+    new THREE.Color(1.6, 1.5, 1.35),
+    new THREE.Vector3(-10, 14, 14),
+    26,
+    26
+  );
+  // Fill: a dim warm panel front-right so camera-facing facets don't fall
+  // all the way to black.
+  addEmitter(
+    new THREE.Color(0.55, 0.5, 0.46),
+    new THREE.Vector3(14, 4, 16),
+    18,
+    18
+  );
+  // Light bars: three thin, very hot strips at different angles. These draw
+  // the sharp streaks that sweep across the chrome as a shard rotates.
+  addEmitter(
+    new THREE.Color(2.8, 2.7, 2.5),
+    new THREE.Vector3(18, 5, -7),
+    2.5,
+    30
+  );
+  addEmitter(
+    new THREE.Color(2.4, 2.3, 2.1),
+    new THREE.Vector3(0, 16, 6),
+    44,
+    2.2,
+    0.45
+  );
+  addEmitter(
+    new THREE.Color(1.9, 1.8, 1.7),
+    new THREE.Vector3(-14, -3, 10),
+    2.2,
+    30,
+    -0.35
+  );
+  // Ember: a wide vermilion strip low and in front, the page accent
+  // reflected on every downward-facing facet.
+  addEmitter(
+    new THREE.Color(2.8, 0.9, 0.3),
+    new THREE.Vector3(4, -11, 10),
+    40,
+    8
+  );
+  // Cool panel left-back: an oil-slick sheen needs a cold colour in the mix.
+  addEmitter(
+    new THREE.Color(0.45, 0.7, 1.1),
+    new THREE.Vector3(-16, 1, -6),
+    10,
+    16
+  );
 
-    // Key: one large cream softbox, upper-left-front. Broad bright facets.
-    disposables.push(
-      addEmitter(
-        new THREE.Color(1.8, 1.7, 1.5),
-        new THREE.Vector3(-10, 14, 14),
-        28,
-        28
-      )
-    );
-    // Fill: a big dim panel front-right so camera-facing facets lift to a
-    // readable warm grey instead of dropping to black.
-    disposables.push(
-      addEmitter(
-        new THREE.Color(0.55, 0.5, 0.45),
-        new THREE.Vector3(14, 4, 16),
-        20,
-        20
-      )
-    );
-    // Rim: a tall thin white strip, right and behind. Thin hard highlights
-    // that trace the bevels and separate shards from the dark page.
-    disposables.push(
-      addEmitter(
-        new THREE.Color(2.4, 2.3, 2.1),
-        new THREE.Vector3(18, 5, -7),
-        3.5,
-        28
-      )
-    );
-    // Ember: a wide vermilion strip low and in front, the page accent
-    // reflected on every downward-facing facet.
-    disposables.push(
-      addEmitter(
-        new THREE.Color(2.6, 0.85, 0.3),
-        new THREE.Vector3(4, -11, 10),
-        40,
-        9
-      )
-    );
-    // A small cool panel far left so not every reflection is warm.
-    disposables.push(
-      addEmitter(
-        new THREE.Color("#2a3648"),
-        new THREE.Vector3(-16, -2, -4),
-        8,
-        8
-      )
-    );
+  // Render the cubemap from origin
+  const cubeCamera = new THREE.CubeCamera(0.1, 200, renderTarget);
+  cubeCamera.update(gl, envScene);
 
-    // Render the cubemap from origin
-    const cubeCamera = new THREE.CubeCamera(0.1, 200, renderTarget);
-    cubeCamera.update(gl, envScene);
-
-    scene.environment = renderTarget.texture;
-
-    return () => {
-      renderTarget.dispose();
-      disposables.forEach((d) => {
-        d.geo.dispose();
-        d.mat.dispose();
-      });
-      scene.environment = null;
-    };
-  }, [scene, gl]);
-
-  return null;
+  // The helper scene has done its job; only the render target lives on.
+  disposables.forEach((d) => {
+    d.geo.dispose();
+    d.mat.dispose();
+  });
+  return renderTarget;
 }
 
 // ─── Lights ──────────────────────────────────────────────────────────────────
 
-// The environment map does most of the lighting; these three just add sharp
-// specular hits that move as the group rotates. (No ambient light: a metal
-// has no diffuse term for it to affect.)
+// The environment map does most of the lighting; these add sharp specular
+// hits. The ember light drifts slowly so the reflections keep moving even
+// while the pointer is still. (No ambient light: a metal has no diffuse term
+// for it to affect.)
 function Lights() {
+  const emberRef = useRef<THREE.PointLight>(null);
+
+  useFrame((state) => {
+    if (!emberRef.current) return;
+    const t = state.clock.elapsedTime;
+    emberRef.current.position.set(
+      3 + Math.sin(t * 0.35) * 1.4,
+      -2.5 + Math.cos(t * 0.27) * 0.9,
+      4 + Math.sin(t * 0.21) * 0.6
+    );
+  });
+
   return (
     <>
       {/* Cream key from upper-right */}
-      <directionalLight position={[6, 8, 5]} intensity={3} color="#fff2d9" />
-      {/* Ember from below-front */}
+      <directionalLight position={[6, 8, 5]} intensity={2.5} color="#fff2d9" />
+      {/* Ember from below-front, drifting */}
       <pointLight
+        ref={emberRef}
         position={[3, -2.5, 4]}
         intensity={5}
         color="#ff5b1f"
@@ -590,10 +609,23 @@ function Lights() {
 
 // ─── Public component ────────────────────────────────────────────────────────
 
-export default function ShardScene() {
+interface ShardSceneProps {
+  // Called once the environment map is built and every shader is compiled,
+  // i.e. the first frame will already look final. The page holds its loader
+  // until then so reflections never pop in after the reveal.
+  onReady?: () => void;
+}
+
+export default function ShardScene({ onReady }: ShardSceneProps) {
   const scrollProgress = useRef(0);
   const pointer = useRef({ x: 0, y: 0 });
   const [enabled, setEnabled] = useState(true);
+  const envRef = useRef<THREE.WebGLCubeRenderTarget | null>(null);
+  const onReadyRef = useRef(onReady);
+
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  }, [onReady]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -602,6 +634,20 @@ export default function ShardScene() {
     const onChange = () => setEnabled(!mq.matches);
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // Reduced motion shows a static gradient instead; nothing to wait for.
+  useEffect(() => {
+    if (!enabled) onReadyRef.current?.();
+  }, [enabled]);
+
+  // The environment render target outlives the Canvas' own scene graph, so
+  // dispose it with the component.
+  useEffect(() => {
+    return () => {
+      envRef.current?.dispose();
+      envRef.current = null;
+    };
   }, []);
 
   // Map scroll to formation index based on the *current section*.
@@ -672,6 +718,17 @@ export default function ShardScene() {
     return () => window.removeEventListener("pointermove", onMove);
   }, []);
 
+  // Runs after the scene graph exists but before anything has rendered:
+  // build the reflections, then compile every material against them (which
+  // also pre-filters the environment map). Only then is the scene "ready".
+  const handleCreated = useCallback(({ gl, scene, camera }: RootState) => {
+    envRef.current?.dispose();
+    const env = buildStudioEnvironment(gl);
+    envRef.current = env;
+    scene.environment = env.texture;
+    gl.compileAsync(scene, camera).finally(() => onReadyRef.current?.());
+  }, []);
+
   if (!enabled) {
     return (
       <div
@@ -691,6 +748,15 @@ export default function ShardScene() {
       className="fixed inset-0 pointer-events-none z-0"
       style={{ contain: "strict" }}
     >
+      {/* Faint ember halo behind the cluster, so the orange reflections have
+          a visible source on the page */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 34vw 30vw at 74% 56%, rgba(255,91,31,0.16), transparent 65%)",
+        }}
+      />
       <Canvas
         dpr={[1, 1.6]}
         camera={{ fov: 38, position: [0, 0, 7] }}
@@ -700,9 +766,9 @@ export default function ShardScene() {
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
         }}
+        onCreated={handleCreated}
         style={{ width: "100%", height: "100%" }}
       >
-        <ProceduralEnv />
         {/* Page-coloured fog: far shards sink into the background for depth */}
         <fog attach="fog" args={["#07080a", 7, 13]} />
         <Lights />

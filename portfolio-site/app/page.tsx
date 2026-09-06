@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import HudChrome from "@/components/Hud/HudChrome";
 import Marquee from "@/components/Hud/Marquee";
@@ -19,15 +19,28 @@ const ShardScene = dynamic(() => import("@/components/Scene/ShardScene"), {
 });
 
 export default function Home() {
-  const [loaded, setLoaded] = useState(false);
+  // The loader lifts once fonts are in AND the 3D scene has built its
+  // reflections and compiled its shaders, so the reveal lands on a finished
+  // frame rather than on shards whose reflections pop in a moment later.
+  const [assetsReady, setAssetsReady] = useState(false);
+  const [sceneReady, setSceneReady] = useState(false);
+  const loaded = assetsReady && sceneReady;
 
   useEffect(() => {
     const minDelay = new Promise((r) => setTimeout(r, 350));
     const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
     Promise.all([minDelay, fontsReady]).then(() => {
-      requestAnimationFrame(() => setLoaded(true));
+      requestAnimationFrame(() => setAssetsReady(true));
     });
   }, []);
+
+  // Safety net: never hold the page hostage if WebGL fails to come up.
+  useEffect(() => {
+    const t = setTimeout(() => setSceneReady(true), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleSceneReady = useCallback(() => setSceneReady(true), []);
 
   return (
     <>
@@ -92,8 +105,9 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Persistent Three.js scene */}
-      {loaded && <ShardScene />}
+      {/* Persistent Three.js scene. Mounted immediately, behind the loader,
+          so its chunk, reflections and shaders are ready before the reveal. */}
+      <ShardScene onReady={handleSceneReady} />
 
       {/* HUD chrome — fixed, always-on */}
       <HudChrome />
@@ -106,7 +120,7 @@ export default function Home() {
           className="relative min-h-screen flex flex-col"
           style={{ paddingBottom: 80 }}
         >
-          <HeroIntro />
+          <HeroIntro play={loaded} />
         </section>
 
         {/* Marquee bridge */}

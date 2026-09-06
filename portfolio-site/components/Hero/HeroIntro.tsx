@@ -3,7 +3,13 @@
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 
-export default function HeroIntro() {
+interface HeroIntroProps {
+  // The entrance stagger starts when this flips true (as the loader lifts),
+  // so it can't play out unseen behind the loader on a slow first load.
+  play: boolean;
+}
+
+export default function HeroIntro({ play }: HeroIntroProps) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -41,7 +47,7 @@ export default function HeroIntro() {
               <motion.span
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={play ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 transition={{
                   duration: 0.7,
                   delay: 0.45 + i * 0.05,
@@ -62,7 +68,7 @@ export default function HeroIntro() {
               <motion.span
                 key={i}
                 initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={play ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
                 transition={{
                   duration: 0.8,
                   delay: 0.85 + i * 0.06,
@@ -78,7 +84,7 @@ export default function HeroIntro() {
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={play ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.7, delay: 1.4 }}
           className="mt-12 font-display max-w-[36ch]"
           style={{
@@ -98,7 +104,7 @@ export default function HeroIntro() {
       <div className="px-[var(--pad)] pb-10">
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: play ? 1 : 0 }}
           transition={{ duration: 0.7, delay: 1.7 }}
           className="flex items-center gap-3 font-mono text-[11px] tracking-[0.22em] uppercase"
           style={{ color: "#6e6b62" }}
