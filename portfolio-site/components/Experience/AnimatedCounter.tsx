@@ -17,8 +17,12 @@ export default function AnimatedCounter({
   const isInView = useInView(ref, { once: true });
   const [displayValue, setDisplayValue] = useState(0);
 
+  // Text stats (no number to count towards) render their literal value,
+  // e.g. "$1M+" or "Splink", instead of animating from zero.
+  const isTextStat = !stat.numericEnd;
+
   useEffect(() => {
-    if (!isInView) return;
+    if (!isInView || isTextStat) return;
 
     const timeout = setTimeout(() => {
       const controls = animate(0, stat.numericEnd, {
@@ -30,10 +34,11 @@ export default function AnimatedCounter({
     }, delay);
 
     return () => clearTimeout(timeout);
-  }, [isInView, stat.numericEnd, delay]);
+  }, [isInView, stat.numericEnd, delay, isTextStat]);
 
-  const formattedValue =
-    displayValue >= 1000
+  const formattedValue = isTextStat
+    ? stat.value
+    : displayValue >= 1000
       ? `${Math.floor(displayValue / 1000)},${String(displayValue % 1000).padStart(3, "0")}`
       : String(displayValue);
 

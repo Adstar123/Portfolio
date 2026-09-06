@@ -25,7 +25,7 @@ const SIDEBAR = [
     label: "Network",
     iconLabel: "in",
     text: "/in/adam-jarick",
-    href: "https://linkedin.com/in/adam-jarick-1154b7211",
+    href: "https://linkedin.com/in/adam-jarick",
     iconify: "mdi:linkedin",
   },
   {
@@ -100,7 +100,7 @@ export default function ContactSection() {
               className="font-mono text-[11px] tracking-[0.22em] uppercase"
               style={{ color: "#6e6b62" }}
             >
-              005 / Ground
+              006 / Ground
             </span>
           </div>
           <div className="col-span-12 md:col-span-10">

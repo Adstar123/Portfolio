@@ -18,7 +18,8 @@ const ACTS: {
   },
   { key: "skills", label: "TOOLKIT", numeral: "III", matches: ["skills"] },
   { key: "projects", label: "THE WORK", numeral: "IV", matches: ["projects"] },
-  { key: "contact", label: "GROUND", numeral: "V", matches: ["contact"] },
+  { key: "resume", label: "DOSSIER", numeral: "V", matches: ["resume"] },
+  { key: "contact", label: "GROUND", numeral: "VI", matches: ["contact"] },
 ];
 
 export default function HudChrome() {

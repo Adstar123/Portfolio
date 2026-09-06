@@ -10,6 +10,7 @@ import AboutSection from "@/components/Sections/AboutSection";
 import ExperienceSection from "@/components/Sections/ExperienceSection";
 import SkillsSection from "@/components/Sections/SkillsSection";
 import ProjectsSection from "@/components/Sections/ProjectsSection";
+import ResumeSection from "@/components/Sections/ResumeSection";
 import ContactSection from "@/components/Sections/ContactSection";
 import Footer from "@/components/Footer";
 
@@ -124,6 +125,9 @@ export default function Home() {
 
         {/* Projects */}
         <ProjectsSection />
+
+        {/* Résumé */}
+        <ResumeSection />
 
         {/* Contact */}
         <ContactSection />
