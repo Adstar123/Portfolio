@@ -73,14 +73,6 @@ export default function HudChrome() {
         className="fixed top-0 left-0 z-50 px-[var(--pad)] py-[26px] flex items-center gap-3 pointer-events-none"
         style={{ mixBlendMode: "difference", color: "#fafafa" }}
       >
-        <span
-          className="inline-block w-[8px] h-[8px] rounded-full pointer-events-auto"
-          style={{
-            background: "#ff5b1f",
-            animation: "pulse-dot 2s ease-in-out infinite",
-            boxShadow: "0 0 10px rgba(255,91,31,0.8)",
-          }}
-        />
         <span className="font-mono text-[11px] tracking-[0.22em] uppercase pointer-events-auto">
           Adam Jarick
         </span>
